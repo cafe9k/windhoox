@@ -82,15 +82,15 @@ function loadEnvLocal(): Partial<AppConfig> {
   return result;
 }
 
-function loadFromDisk(): AppConfig {
+function loadFromDisk(): { config: AppConfig; raw: Partial<AppConfig>; hasFile: boolean } {
   ensurePaths();
 
   try {
     const content = fs.readFileSync(_configPath, "utf-8");
     const parsed = JSON.parse(content) as Partial<AppConfig>;
-    return { ...DEFAULT_CONFIG, ...parsed };
+    return { config: { ...DEFAULT_CONFIG, ...parsed }, raw: parsed, hasFile: true };
   } catch {
-    return { ...DEFAULT_CONFIG };
+    return { config: { ...DEFAULT_CONFIG }, raw: {}, hasFile: false };
   }
 }
 
@@ -107,15 +107,24 @@ function saveToDisk(config: AppConfig): void {
   }
 }
 
-function buildSources(fromDisk: AppConfig, fromEnv: Partial<AppConfig>): Record<keyof AppConfig, ConfigSource> {
+function buildSources(
+  fromDisk: { raw: Partial<AppConfig>; hasFile: boolean },
+  fromEnv: Partial<AppConfig>,
+): Record<keyof AppConfig, ConfigSource> {
   const envSource: ConfigSource = { key: "env", label: ".env.local" };
   const diskSource: ConfigSource = { key: "disk", label: "已保存" };
   const defaultSource: ConfigSource = { key: "default", label: "默认值" };
 
   return {
-    deepseekApiKey: fromEnv.deepseekApiKey ? envSource : (fromDisk.deepseekApiKey ? diskSource : defaultSource),
-    deepseekBaseUrl: fromEnv.deepseekBaseUrl ? envSource : (fromDisk.deepseekBaseUrl ? diskSource : defaultSource),
-    deepseekModel: fromEnv.deepseekModel ? envSource : (fromDisk.deepseekModel ? diskSource : defaultSource),
+    deepseekApiKey: fromEnv.deepseekApiKey
+      ? envSource
+      : (fromDisk.hasFile && "deepseekApiKey" in fromDisk.raw ? diskSource : defaultSource),
+    deepseekBaseUrl: fromEnv.deepseekBaseUrl
+      ? envSource
+      : (fromDisk.hasFile && "deepseekBaseUrl" in fromDisk.raw ? diskSource : defaultSource),
+    deepseekModel: fromEnv.deepseekModel
+      ? envSource
+      : (fromDisk.hasFile && "deepseekModel" in fromDisk.raw ? diskSource : defaultSource),
   };
 }
 
@@ -126,7 +135,7 @@ function buildSources(fromDisk: AppConfig, fromEnv: Partial<AppConfig>): Record<
 export function getConfig(): AppConfig {
   if (_config) return _config;
 
-  const fromDisk = loadFromDisk();
+  const { config: fromDisk } = loadFromDisk();
   const fromEnv = loadEnvLocal();
 
   // .env.local takes precedence in development
@@ -136,7 +145,7 @@ export function getConfig(): AppConfig {
     ...fromEnv,
   };
 
-  _sources = buildSources(fromDisk, fromEnv);
+  _sources = buildSources(loadFromDisk(), fromEnv);
 
   return _config;
 }
@@ -183,4 +192,14 @@ export function getConfigMasked(): Omit<ConfigWithSources, "deepseekApiKey"> & {
 export function isConfigReady(): boolean {
   const config = getConfig();
   return Boolean(config.deepseekApiKey && config.deepseekBaseUrl);
+}
+
+/**
+ * Reset internal config cache. Used in tests to ensure clean state.
+ */
+export function resetConfigCache(): void {
+  _config = null;
+  _sources = null;
+  _configPath = "";
+  _configDir = "";
 }
