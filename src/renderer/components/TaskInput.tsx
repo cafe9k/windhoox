@@ -37,7 +37,7 @@ export function TaskInput({ onSubmit, onLoadDemo, isLoading = false }: TaskInput
       </Form.Item>
 
       <Form.Item style={{ marginTop: 16, marginBottom: 0 }}>
-        <Space direction="vertical" style={{ width: "100%" }}>
+        <Space orientation="vertical" style={{ width: "100%" }}>
           <Button
             data-testid="start-button"
             type="primary"
