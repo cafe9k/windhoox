@@ -1,0 +1,58 @@
+.insight-card {
+  padding: 12px;
+  margin-bottom: 8px;
+  border-left: 3px solid #ccc;
+  border-radius: 2px;
+  background: #f9f9f9;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.insight-card.insight-high {
+  border-left-color: #2e7d32;
+  background: #f1f8e9;
+}
+
+.insight-card.insight-medium {
+  border-left-color: #f57f17;
+  background: #fff3e0;
+}
+
+.insight-card.insight-low {
+  border-left-color: #1565c0;
+  background: #e3f2fd;
+}
+
+.insight-section {
+  margin-bottom: 6px;
+}
+
+.insight-section:last-of-type {
+  margin-bottom: 8px;
+}
+
+.insight-section strong {
+  display: block;
+  margin-bottom: 2px;
+  color: #666;
+  font-size: 11px;
+  text-transform: uppercase;
+}
+
+.insight-section p {
+  margin: 0;
+  color: #333;
+  word-break: break-word;
+}
+
+.confidence-badge {
+  font-size: 10px;
+  color: #666;
+  padding-top: 6px;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  text-transform: uppercase;
+}
+
+.confidence-badge strong {
+  color: #333;
+}

@@ -1,0 +1,153 @@
+.test-case-card {
+  border: 1px solid #d0d0d0;
+  border-radius: 4px;
+  margin-bottom: 8px;
+  background: #fff;
+  overflow: hidden;
+}
+
+.case-header {
+  padding: 10px 12px;
+  background: #f9f9f9;
+  border-bottom: 1px solid #e0e0e0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+  transition: background-color 0.2s;
+}
+
+.case-header:hover {
+  background: #f0f0f0;
+}
+
+.case-title-section {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+}
+
+.case-title {
+  font-size: 12px;
+  color: #333;
+  margin: 0;
+}
+
+.case-status {
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 3px;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+
+.case-status-pending {
+  background: #f0f0f0;
+  color: #666;
+}
+
+.case-status-accepted {
+  background: #c8e6c9;
+  color: #1b5e20;
+}
+
+.case-status-rejected {
+  background: #ffcccc;
+  color: #b71c1c;
+}
+
+.case-status-ask-product,
+.case-status-ask-engineering {
+  background: #fff9c4;
+  color: #f57f17;
+}
+
+.case-status-needs-context {
+  background: #bbdefb;
+  color: #0d47a1;
+}
+
+.expand-icon {
+  font-size: 16px;
+  color: #999;
+  font-weight: 300;
+}
+
+.case-content {
+  padding: 12px;
+}
+
+.case-section {
+  margin-bottom: 10px;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.case-section:last-of-type {
+  margin-bottom: 12px;
+}
+
+.case-section strong {
+  display: block;
+  margin-bottom: 4px;
+  color: #666;
+  font-size: 11px;
+  text-transform: uppercase;
+}
+
+.case-section p {
+  margin: 0;
+  color: #333;
+  word-break: break-word;
+}
+
+.case-section ul,
+.case-section ol {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.case-section li {
+  margin-bottom: 2px;
+  color: #333;
+}
+
+.case-actions {
+  display: flex;
+  gap: 6px;
+  padding-top: 8px;
+  border-top: 1px solid #e0e0e0;
+}
+
+.action-btn {
+  flex: 1;
+  padding: 6px 8px;
+  font-size: 11px;
+  font-weight: 500;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  text-transform: uppercase;
+  transition: opacity 0.2s;
+}
+
+.action-btn:hover {
+  opacity: 0.85;
+}
+
+.accept-btn {
+  background: #4caf50;
+  color: #fff;
+}
+
+.reject-btn {
+  background: #f44336;
+  color: #fff;
+}
+
+.clarify-btn {
+  background: #2196f3;
+  color: #fff;
+}
