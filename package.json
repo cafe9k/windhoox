@@ -18,7 +18,8 @@
     "test": "vitest run",
     "test:electron": "vitest run src/preload",
     "test:renderer": "vitest run src/renderer",
-    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.node.json --noEmit"
+    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.node.json --noEmit",
+    "sync:docs": "node scripts/sync-docs.ts"
   },
   "dependencies": {
     "electron-updater": "^6.8.3",
