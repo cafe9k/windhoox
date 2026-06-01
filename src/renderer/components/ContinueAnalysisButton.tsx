@@ -71,7 +71,7 @@ export function ContinueAnalysisButton({ state, onContinue }: ContinueAnalysisBu
             data-testid="summary-reviewed"
             title="已审核"
             value={`${reviewedCount} 个测试用例`}
-            valueStyle={{ fontSize: 14 }}
+            styles={{ content: { fontSize: 14 } }}
           />
         </Col>
         <Col span={12}>
@@ -79,13 +79,13 @@ export function ContinueAnalysisButton({ state, onContinue }: ContinueAnalysisBu
             data-testid="summary-questions"
             title="待澄清"
             value={`${unresolvedQuestions.length} 个问题`}
-            valueStyle={{ fontSize: 14 }}
+            styles={{ content: { fontSize: 14 } }}
           />
         </Col>
       </Row>
 
       {showPromptInput ? (
-        <Space direction="vertical" style={{ width: "100%" }}>
+        <Space orientation="vertical" style={{ width: "100%" }}>
           <Input.TextArea
             data-testid="prompt-textarea"
             placeholder="添加额外的说明或问题（可选）..."

@@ -23,7 +23,7 @@ export function TestCaseCounter({ counts }: TestCaseCounterProps) {
           data-testid="counter-pending"
           title="待审核"
           value={counts.pending}
-          valueStyle={{ color: "#faad14", fontSize: 18 }}
+          styles={{ content: { color: "#faad14", fontSize: 18 } }}
           prefix={<ClockCircleOutlined />}
         />
       </Col>
@@ -32,7 +32,7 @@ export function TestCaseCounter({ counts }: TestCaseCounterProps) {
           data-testid="counter-accepted"
           title="已接受"
           value={counts.accepted}
-          valueStyle={{ color: "#52c41a", fontSize: 18 }}
+          styles={{ content: { color: "#52c41a", fontSize: 18 } }}
           prefix={<CheckCircleOutlined />}
         />
       </Col>
@@ -41,7 +41,7 @@ export function TestCaseCounter({ counts }: TestCaseCounterProps) {
           data-testid="counter-rejected"
           title="已拒绝"
           value={counts.rejected}
-          valueStyle={{ color: "#ff4d4f", fontSize: 18 }}
+          styles={{ content: { color: "#ff4d4f", fontSize: 18 } }}
           prefix={<CloseCircleOutlined />}
         />
       </Col>
@@ -50,7 +50,7 @@ export function TestCaseCounter({ counts }: TestCaseCounterProps) {
           data-testid="counter-clarification"
           title="需要澄清"
           value={counts.needsClarification}
-          valueStyle={{ color: "#1890ff", fontSize: 18 }}
+          styles={{ content: { color: "#1890ff", fontSize: 18 } }}
           prefix={<QuestionCircleOutlined />}
         />
       </Col>
