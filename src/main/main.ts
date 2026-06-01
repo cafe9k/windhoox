@@ -2,6 +2,7 @@ import { app, BrowserWindow, shell } from "electron";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { initAutoUpdater } from "./updater.js";
+import { registerAgentHandlers } from "./agent-handlers.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const devServerUrl = process.env.VITE_DEV_SERVER_URL ?? "http://127.0.0.1:5173";
@@ -37,6 +38,7 @@ async function createMainWindow() {
 }
 
 app.whenReady().then(async () => {
+  registerAgentHandlers();
   await createMainWindow();
   initAutoUpdater();
 
