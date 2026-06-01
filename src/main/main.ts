@@ -1,6 +1,7 @@
 import { app, BrowserWindow, shell } from "electron";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { initAutoUpdater } from "./updater.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const devServerUrl = process.env.VITE_DEV_SERVER_URL ?? "http://127.0.0.1:5173";
@@ -27,15 +28,17 @@ async function createMainWindow() {
 
   if (app.isPackaged) {
     await mainWindow.loadFile(path.join(__dirname, "../../dist/index.html"));
-    return;
+    return mainWindow;
   }
 
   await mainWindow.loadURL(devServerUrl);
   mainWindow.webContents.openDevTools({ mode: "detach" });
+  return mainWindow;
 }
 
-app.whenReady().then(() => {
-  void createMainWindow();
+app.whenReady().then(async () => {
+  await createMainWindow();
+  initAutoUpdater();
 
   app.on("activate", () => {
     if (BrowserWindow.getAllWindows().length === 0) {
@@ -49,4 +52,3 @@ app.on("window-all-closed", () => {
     app.quit();
   }
 });
-
