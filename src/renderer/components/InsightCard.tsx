@@ -1,4 +1,4 @@
-import { Card, Tag, Typography } from "antd";
+import { Card, Tag } from "antd";
 
 interface InsightCardProps {
   businessRule?: string;
@@ -17,7 +17,7 @@ export function InsightCard({
   businessRule,
   risk,
   evidence,
-  confidence
+  confidence,
 }: InsightCardProps) {
   const conf = confidenceMap[confidence];
 
@@ -25,53 +25,35 @@ export function InsightCard({
     <Card
       data-testid="insight-card"
       size="small"
-      styles={{
-        body: { padding: 12 },
-      }}
+      className={`wh-insight-card wh-insight-card--${confidence}`}
       style={{
-        marginBottom: 12,
-        borderLeft: `3px solid ${
-          confidence === "high" ? "#52c41a" : confidence === "medium" ? "#faad14" : "#1890ff"
-        }`,
+        marginBottom: 10,
+        borderRadius: "var(--radius-md)",
       }}
     >
       {businessRule && (
-        <div style={{ marginBottom: 8 }}>
-          <Typography.Text type="secondary" style={{ fontSize: 12, fontWeight: 600 }}>
-            业务规则
-          </Typography.Text>
-          <Typography.Paragraph style={{ margin: 0, marginTop: 4, fontSize: 13 }}>
-            {businessRule}
-          </Typography.Paragraph>
+        <div style={{ marginBottom: 10 }}>
+          <span className="wh-insight-label">业务规则</span>
+          <p className="wh-insight-text">{businessRule}</p>
         </div>
       )}
 
       {risk && (
-        <div style={{ marginBottom: 8 }}>
-          <Typography.Text type="secondary" style={{ fontSize: 12, fontWeight: 600 }}>
-            风险
-          </Typography.Text>
-          <Typography.Paragraph style={{ margin: 0, marginTop: 4, fontSize: 13 }}>
-            {risk}
-          </Typography.Paragraph>
+        <div style={{ marginBottom: 10 }}>
+          <span className="wh-insight-label">风险</span>
+          <p className="wh-insight-text">{risk}</p>
         </div>
       )}
 
       {evidence && (
-        <div style={{ marginBottom: 8 }}>
-          <Typography.Text type="secondary" style={{ fontSize: 12, fontWeight: 600 }}>
-            证据
-          </Typography.Text>
-          <Typography.Paragraph style={{ margin: 0, marginTop: 4, fontSize: 13 }}>
-            {evidence}
-          </Typography.Paragraph>
+        <div style={{ marginBottom: 10 }}>
+          <span className="wh-insight-label">证据</span>
+          <p className="wh-insight-text">{evidence}</p>
         </div>
       )}
 
-      <div style={{ borderTop: "1px solid #f0f0f0", paddingTop: 8, marginTop: 4 }}>
-        <Typography.Text type="secondary" style={{ fontSize: 12 }}>
-          信心度: <Tag color={conf.color}>{conf.text}</Tag>
-        </Typography.Text>
+      <div className="wh-insight-footer">
+        信心度: <Tag color={conf.color}>{conf.text}</Tag>
       </div>
     </Card>
   );

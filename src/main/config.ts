@@ -7,7 +7,10 @@
 
 import fs from "node:fs";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { app } from "electron";
+
+const _configDirname = path.dirname(fileURLToPath(import.meta.url));
 
 export interface AppConfig {
   deepseekApiKey: string;
@@ -52,31 +55,48 @@ function ensurePaths(): void {
  * Load .env.local file and extract DEEPSEEK_API_KEY if present.
  */
 function loadEnvLocal(): Partial<AppConfig> {
-  const envPath = path.join(process.cwd(), ".env.local");
+  // Try multiple locations: cwd (for CLI/scripts), relative to this file (for Electron),
+  // and app root (for packaged Electron)
+  const candidates = [
+    path.join(process.cwd(), ".env.local"),
+    path.join(_configDirname, "../../.env.local"),
+  ];
+
+  // In Electron, also try app path
+  try {
+    candidates.push(path.join(app.getAppPath(), ".env.local"));
+  } catch {
+    // app not ready yet — skip
+  }
+
   const result: Partial<AppConfig> = {};
 
-  try {
-    const content = fs.readFileSync(envPath, "utf-8");
-    for (const line of content.split("\n")) {
-      const trimmed = line.trim();
-      if (!trimmed || trimmed.startsWith("#")) continue;
+  for (const envPath of candidates) {
+    try {
+      const content = fs.readFileSync(envPath, "utf-8");
+      for (const line of content.split("\n")) {
+        const trimmed = line.trim();
+        if (!trimmed || trimmed.startsWith("#")) continue;
 
-      const eqIdx = trimmed.indexOf("=");
-      if (eqIdx === -1) continue;
+        const eqIdx = trimmed.indexOf("=");
+        if (eqIdx === -1) continue;
 
-      const key = trimmed.slice(0, eqIdx).trim();
-      const value = trimmed.slice(eqIdx + 1).trim().replace(/^["']|["']$/g, "");
+        const key = trimmed.slice(0, eqIdx).trim();
+        const value = trimmed.slice(eqIdx + 1).trim().replace(/^["']|["']$/g, "");
 
-      if (key === "DEEPSEEK_API_KEY") {
-        result.deepseekApiKey = value;
-      } else if (key === "DEEPSEEK_BASE_URL") {
-        result.deepseekBaseUrl = value;
-      } else if (key === "DEEPSEEK_MODEL") {
-        result.deepseekModel = value;
+        if (key === "DEEPSEEK_API_KEY") {
+          result.deepseekApiKey = value;
+        } else if (key === "DEEPSEEK_BASE_URL") {
+          result.deepseekBaseUrl = value;
+        } else if (key === "DEEPSEEK_MODEL") {
+          result.deepseekModel = value;
+        }
       }
+      // Found and parsed — stop here
+      if (result.deepseekApiKey) break;
+    } catch {
+      // File doesn't exist at this location — try next
     }
-  } catch {
-    // .env.local doesn't exist — that's fine
   }
 
   return result;

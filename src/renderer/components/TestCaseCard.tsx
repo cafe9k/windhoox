@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Card, Tag, Button, Space, Typography, Divider } from "antd";
+import { Card, Tag, Button, Space } from "antd";
 import {
   CheckCircleOutlined,
   CloseCircleOutlined,
@@ -40,49 +40,38 @@ export function TestCaseCard({ testCase, onStatusChange }: TestCaseCardProps) {
     <Card
       data-testid="test-case-card"
       size="small"
-      style={{ marginBottom: 8 }}
+      className="wh-case-card"
       styles={{ body: { padding: 0 } }}
     >
       <div
         data-testid="case-header"
         onClick={() => setExpanded(!expanded)}
-        style={{
-          padding: "10px 12px",
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          cursor: "pointer",
-          userSelect: "none",
-        }}
+        className={`wh-case-header ${expanded ? "wh-case-header--expanded" : ""}`}
       >
         <Space>
-          <Typography.Text strong style={{ fontSize: 13 }}>
-            {testCase.title}
-          </Typography.Text>
-          <Tag color={config.color}>{config.label}</Tag>
+          <span className="wh-case-title">{testCase.title}</span>
+          <Tag color={config.color} className="wh-status-tag">
+            {config.label}
+          </Tag>
         </Space>
-        {expanded ? <CaretDownOutlined /> : <CaretRightOutlined />}
+        {expanded ? (
+          <CaretDownOutlined style={{ color: "var(--color-text-muted)" }} />
+        ) : (
+          <CaretRightOutlined style={{ color: "var(--color-text-muted)" }} />
+        )}
       </div>
 
       {expanded && (
-        <div style={{ padding: "0 12px 12px" }}>
-          <Divider style={{ margin: "8px 0" }} />
-
-          <div style={{ marginBottom: 12 }}>
-            <Typography.Text type="secondary" style={{ fontSize: 12, fontWeight: 600 }}>
-              描述
-            </Typography.Text>
-            <Typography.Paragraph style={{ margin: "4px 0 0", fontSize: 13 }}>
-              {testCase.description}
-            </Typography.Paragraph>
+        <div className="wh-case-body">
+          <div className="wh-case-section">
+            <span className="wh-case-section-title">描述</span>
+            <p className="wh-case-section-content">{testCase.description}</p>
           </div>
 
           {testCase.preconditions.length > 0 && (
-            <div style={{ marginBottom: 12 }}>
-              <Typography.Text type="secondary" style={{ fontSize: 12, fontWeight: 600 }}>
-                前置条件
-              </Typography.Text>
-              <ul style={{ margin: "4px 0 0", paddingLeft: 20, fontSize: 13 }}>
+            <div className="wh-case-section">
+              <span className="wh-case-section-title">前置条件</span>
+              <ul className="wh-case-list">
                 {testCase.preconditions.map((pc, i) => (
                   <li key={i}>{pc}</li>
                 ))}
@@ -91,11 +80,9 @@ export function TestCaseCard({ testCase, onStatusChange }: TestCaseCardProps) {
           )}
 
           {testCase.steps.length > 0 && (
-            <div style={{ marginBottom: 12 }}>
-              <Typography.Text type="secondary" style={{ fontSize: 12, fontWeight: 600 }}>
-                步骤
-              </Typography.Text>
-              <ol style={{ margin: "4px 0 0", paddingLeft: 20, fontSize: 13 }}>
+            <div className="wh-case-section">
+              <span className="wh-case-section-title">步骤</span>
+              <ol className="wh-case-list">
                 {testCase.steps.map((step, i) => (
                   <li key={i}>{step}</li>
                 ))}
@@ -103,16 +90,12 @@ export function TestCaseCard({ testCase, onStatusChange }: TestCaseCardProps) {
             </div>
           )}
 
-          <div style={{ marginBottom: 12 }}>
-            <Typography.Text type="secondary" style={{ fontSize: 12, fontWeight: 600 }}>
-              预期结果
-            </Typography.Text>
-            <Typography.Paragraph style={{ margin: "4px 0 0", fontSize: 13 }}>
-              {testCase.expectedResult}
-            </Typography.Paragraph>
+          <div className="wh-case-section">
+            <span className="wh-case-section-title">预期结果</span>
+            <p className="wh-case-section-content">{testCase.expectedResult}</p>
           </div>
 
-          <Space style={{ width: "100%" }}>
+          <div className="wh-case-actions">
             <Button
               data-testid="accept-btn"
               type="primary"
@@ -139,7 +122,7 @@ export function TestCaseCard({ testCase, onStatusChange }: TestCaseCardProps) {
             >
               澄清
             </Button>
-          </Space>
+          </div>
         </div>
       )}
     </Card>

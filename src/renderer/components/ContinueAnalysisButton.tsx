@@ -21,7 +21,10 @@ interface ContinueAnalysisButtonProps {
   }) => Promise<void>;
 }
 
-export function ContinueAnalysisButton({ state, onContinue }: ContinueAnalysisButtonProps) {
+export function ContinueAnalysisButton({
+  state,
+  onContinue,
+}: ContinueAnalysisButtonProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [followUpPrompt, setFollowUpPrompt] = useState("");
   const [showPromptInput, setShowPromptInput] = useState(false);
@@ -51,10 +54,10 @@ export function ContinueAnalysisButton({ state, onContinue }: ContinueAnalysisBu
           unresolvedQuestions: unresolvedQuestions.map((q) => ({
             id: q.id,
             category: q.category,
-            text: q.question
-          }))
+            text: q.question,
+          })),
         },
-        followUpPrompt: followUpPrompt.trim() || undefined
+        followUpPrompt: followUpPrompt.trim() || undefined,
       });
     } finally {
       setIsLoading(false);
@@ -64,14 +67,14 @@ export function ContinueAnalysisButton({ state, onContinue }: ContinueAnalysisBu
   };
 
   return (
-    <Card size="small" style={{ marginBottom: 16 }}>
+    <Card size="small" className="wh-continue-card" style={{ marginBottom: 16 }}>
       <Row gutter={16} style={{ marginBottom: 12 }}>
         <Col span={12}>
           <Statistic
             data-testid="summary-reviewed"
             title="已审核"
             value={`${reviewedCount} 个测试用例`}
-            styles={{ content: { fontSize: 14 } }}
+            valueStyle={{ fontSize: 14, fontWeight: 600 }}
           />
         </Col>
         <Col span={12}>
@@ -79,19 +82,20 @@ export function ContinueAnalysisButton({ state, onContinue }: ContinueAnalysisBu
             data-testid="summary-questions"
             title="待澄清"
             value={`${unresolvedQuestions.length} 个问题`}
-            styles={{ content: { fontSize: 14 } }}
+            valueStyle={{ fontSize: 14, fontWeight: 600 }}
           />
         </Col>
       </Row>
 
       {showPromptInput ? (
-        <Space orientation="vertical" style={{ width: "100%" }}>
+        <Space direction="vertical" style={{ width: "100%" }}>
           <Input.TextArea
             data-testid="prompt-textarea"
             placeholder="添加额外的说明或问题（可选）..."
             value={followUpPrompt}
             onChange={(e) => setFollowUpPrompt(e.target.value)}
             rows={3}
+            style={{ borderRadius: "var(--radius-sm)" }}
           />
           <Space style={{ width: "100%", justifyContent: "flex-end" }}>
             <Button

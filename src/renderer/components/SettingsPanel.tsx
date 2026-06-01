@@ -8,7 +8,6 @@ import {
   Alert,
   Tag,
   Space,
-  Typography,
 } from "antd";
 import { EyeOutlined, EyeInvisibleOutlined, SaveOutlined } from "@ant-design/icons";
 import type { AppConfig } from "../../types/agent";
@@ -39,17 +38,20 @@ export function SettingsPanel({ onClose }: SettingsPanelProps) {
 
   useEffect(() => {
     if (agentApi?.getConfig) {
-      agentApi.getConfig().then((config: ConfigWithSources) => {
-        form.setFieldsValue({
-          apiKey: config.deepseekApiKey || "",
-          baseUrl: config.deepseekBaseUrl || "https://api.deepseek.com",
-          model: config.deepseekModel || "deepseek-reasoner",
+      agentApi
+        .getConfig()
+        .then((config: ConfigWithSources) => {
+          form.setFieldsValue({
+            apiKey: config.deepseekApiKey || "",
+            baseUrl: config.deepseekBaseUrl || "https://api.deepseek.com",
+            model: config.deepseekModel || "deepseek-reasoner",
+          });
+          setApiKey(config.deepseekApiKey || "");
+          setApiKeySource(config._sources?.deepseekApiKey || null);
+        })
+        .catch(() => {
+          // Silently fail — will use defaults
         });
-        setApiKey(config.deepseekApiKey || "");
-        setApiKeySource(config._sources?.deepseekApiKey || null);
-      }).catch(() => {
-        // Silently fail — will use defaults
-      });
     }
   }, [agentApi, form]);
 
@@ -86,11 +88,7 @@ export function SettingsPanel({ onClose }: SettingsPanelProps) {
   return (
     <Modal
       open
-      title={
-        <Space>
-          <span>设置</span>
-        </Space>
-      }
+      title={<span style={{ fontWeight: 600, fontSize: 15 }}>设置</span>}
       onCancel={onClose}
       footer={null}
       width={520}
@@ -103,16 +101,22 @@ export function SettingsPanel({ onClose }: SettingsPanelProps) {
           model: "deepseek-reasoner",
         }}
       >
-        <Typography.Title level={5} style={{ marginTop: 0 }}>
-          DeepSeek API 配置
-        </Typography.Title>
+        <h3 className="wh-settings-section-title">DeepSeek API 配置</h3>
 
         <Form.Item
           label={
             <Space>
               <span>API Key</span>
               {apiKeySource && (
-                <Tag color={apiKeySource.key === "env" ? "blue" : apiKeySource.key === "disk" ? "green" : "default"}>
+                <Tag
+                  color={
+                    apiKeySource.key === "env"
+                      ? "blue"
+                      : apiKeySource.key === "disk"
+                        ? "green"
+                        : "default"
+                  }
+                >
                   {apiKeySource.label}
                 </Tag>
               )}
@@ -132,7 +136,9 @@ export function SettingsPanel({ onClose }: SettingsPanelProps) {
             disabled={isEnvKey}
             readOnly={isEnvKey}
             visibilityToggle={{ visible: showKey, onVisibleChange: setShowKey }}
-            iconRender={(visible) => (visible ? <EyeOutlined /> : <EyeInvisibleOutlined />)}
+            iconRender={(visible) =>
+              visible ? <EyeOutlined /> : <EyeInvisibleOutlined />
+            }
           />
         </Form.Item>
 
@@ -143,20 +149,31 @@ export function SettingsPanel({ onClose }: SettingsPanelProps) {
             message="API Key 来自环境变量"
             description={
               <>
-                API Key 来自 <code>.env.local</code> 环境变量，不可在 UI 中修改。
-                如需修改，请编辑项目根目录下的 <code>.env.local</code> 文件后重启应用。
+                API Key 来自 <code>.env.local</code> 环境变量，不可在 UI 中修改。如需修改，请编辑项目根目录下的{" "}
+                <code>.env.local</code> 文件后重启应用。
               </>
             }
             style={{ marginBottom: 16 }}
           />
         ) : (
-          <Typography.Text type="secondary" style={{ fontSize: 12, display: "block", marginBottom: 16 }}>
+          <div
+            style={{
+              fontSize: 12,
+              color: "var(--color-text-muted)",
+              marginBottom: 16,
+            }}
+          >
             从{" "}
-            <a href="https://platform.deepseek.com/api_keys" target="_blank" rel="noopener">
+            <a
+              href="https://platform.deepseek.com/api_keys"
+              target="_blank"
+              rel="noopener"
+              style={{ color: "var(--color-primary)" }}
+            >
               DeepSeek 控制台
             </a>{" "}
             获取 API Key。
-          </Typography.Text>
+          </div>
         )}
 
         <Form.Item label="Base URL" name="baseUrl">
@@ -175,13 +192,25 @@ export function SettingsPanel({ onClose }: SettingsPanelProps) {
         </Form.Item>
 
         {message === "success" && (
-          <Alert type="success" message="设置已保存" style={{ marginBottom: 16 }} />
+          <Alert
+            type="success"
+            message="设置已保存"
+            style={{ marginBottom: 16 }}
+          />
         )}
         {message === "error" && (
-          <Alert type="error" message="保存失败" style={{ marginBottom: 16 }} />
+          <Alert
+            type="error"
+            message="保存失败"
+            style={{ marginBottom: 16 }}
+          />
         )}
         {message && message !== "success" && message !== "error" && (
-          <Alert type="error" message={message} style={{ marginBottom: 16 }} />
+          <Alert
+            type="error"
+            message={message}
+            style={{ marginBottom: 16 }}
+          />
         )}
 
         <Form.Item style={{ marginBottom: 0, textAlign: "right" }}>

@@ -1,5 +1,5 @@
-import { useState, useCallback, useReducer, useMemo } from "react";
-import { Layout, Card, Button, Empty, Spin, Tag, Typography, Space } from "antd";
+import { useState, useCallback, useReducer, useMemo, useEffect } from "react";
+import { Layout, Card, Button, Empty, Spin, Tag, Typography, Space, message } from "antd";
 import {
   SettingOutlined,
   FileTextOutlined,
@@ -38,7 +38,24 @@ export function Workbench() {
   const [session, setSession] = useState<Session | null>(null);
   const [agentState, dispatch] = useReducer(agentStateReducer, null as AgentState | null);
   const [showSettings, setShowSettings] = useState(false);
+  const [apiError, setApiError] = useState<string | null>(null);
   const agentApi = (window as any).windhoox?.agent;
+
+  // Register agent event listener once on mount
+  useEffect(() => {
+    if (!agentApi) return;
+    const unsubscribe = agentApi.onEvent((event: AgentEvent) => {
+      dispatch(event);
+      if (event.type === "run_completed") {
+        setSession((prev) => (prev ? { ...prev, state: "completed" } : null));
+        setApiError(null);
+      } else if (event.type === "run_failed") {
+        setSession((prev) => (prev ? { ...prev, state: "failed" } : null));
+        setApiError(event.error);
+      }
+    });
+    return unsubscribe;
+  }, [agentApi]);
 
   const caseCounts = useMemo(() => {
     if (!agentState?.cases) {
@@ -70,16 +87,20 @@ export function Workbench() {
   const handleStartAnalysis = useCallback(
     async (requirement: string) => {
       if (!agentApi) {
-        console.error("Agent API not available");
+        message.error("Agent API 不可用。请确认应用通过 Electron 运行（pnpm dev），而非直接在浏览器中打开。");
         return;
       }
 
       const sessionId = `session-${Date.now()}`;
+      setApiError(null);
       setSession({
         id: sessionId,
         state: "running",
         requirement,
       });
+
+      // Reset agent state for a fresh run
+      dispatch({ type: "run_started", sessionId, taskId: `task-${Date.now()}`, timestamp: Date.now() });
 
       try {
         const result = await agentApi.startAnalysis({
@@ -95,22 +116,10 @@ export function Workbench() {
               }
             : null
         );
-
-        agentApi.onEvent((event: AgentEvent) => {
-          dispatch(event);
-
-          if (event.type === "run_completed") {
-            setSession((prev) =>
-              prev ? { ...prev, state: "completed" } : null
-            );
-          } else if (event.type === "run_failed") {
-            setSession((prev) =>
-              prev ? { ...prev, state: "failed" } : null
-            );
-          }
-        });
       } catch (error) {
+        const errMsg = error instanceof Error ? error.message : "启动分析失败";
         console.error("Failed to start analysis:", error);
+        setApiError(errMsg);
         setSession((prev) =>
           prev ? { ...prev, state: "failed" } : null
         );
@@ -202,21 +211,10 @@ export function Workbench() {
             : null
         );
 
-        agentApi.onEvent((event: AgentEvent) => {
-          dispatch(event);
-
-          if (event.type === "run_completed") {
-            setSession((prev) =>
-              prev ? { ...prev, state: "completed" } : null
-            );
-          } else if (event.type === "run_failed") {
-            setSession((prev) =>
-              prev ? { ...prev, state: "failed" } : null
-            );
-          }
-        });
       } catch (error) {
+        const errMsg = error instanceof Error ? error.message : "继续分析失败";
         console.error("Failed to continue analysis:", error);
+        setApiError(errMsg);
         setSession((prev) =>
           prev ? { ...prev, state: "failed" } : null
         );
@@ -226,21 +224,20 @@ export function Workbench() {
   );
 
   return (
-    <Layout style={{ height: "100vh", background: "#f5f7f9" }}>
+    <Layout style={{ minHeight: "100dvh", background: "var(--color-bg)" }}>
       {showSettings && <SettingsPanel onClose={() => setShowSettings(false)} />}
 
+      {/* ─── Left Sidebar ─── */}
       <Sider
         width={280}
         theme="light"
-        style={{
-          borderRight: "1px solid #e5e9f0",
-          overflow: "auto",
-        }}
+        className="wh-sidebar"
+        style={{ overflow: "hidden" }}
       >
         <Card
           title={
             <Space>
-              <FileTextOutlined />
+              <FileTextOutlined style={{ color: "var(--color-primary)" }} />
               <span>任务与上下文</span>
             </Space>
           }
@@ -252,131 +249,169 @@ export function Workbench() {
               title="设置"
             />
           }
-          styles={{ body: { padding: 16, height: "calc(100vh - 57px)", overflow: "auto" } }}
-          style={{ height: "100%", borderRadius: 0, border: "none" }}
+          className="wh-sidebar-card"
         >
-          {!session ? (
-            <TaskInput
-              onSubmit={handleStartAnalysis}
-              onLoadDemo={handleLoadDemo}
-            />
-          ) : (
-            <Space orientation="vertical" style={{ width: "100%" }}>
-              <Tag color={statusTagConfig[session.state].color}>
-                {statusTagConfig[session.state].text}
-              </Tag>
-              {session.requirement && (
-                <Card size="small" style={{ background: "#fafbfc" }}>
-                  <Text type="secondary" style={{ fontSize: 11, fontWeight: 600 }}>
-                    需求
-                  </Text>
-                  <Text style={{ display: "block", marginTop: 4, whiteSpace: "pre-wrap" }}>
-                    {session.requirement}
-                  </Text>
-                </Card>
-              )}
-            </Space>
-          )}
+          <div style={{ padding: 16, height: "calc(100dvh - 48px)", overflow: "auto" }}>
+            {!session ? (
+              <TaskInput
+                onSubmit={handleStartAnalysis}
+                onLoadDemo={handleLoadDemo}
+              />
+            ) : (
+              <Space direction="vertical" style={{ width: "100%" }}>
+                <Tag
+                  color={statusTagConfig[session.state].color}
+                  className="wh-status-tag"
+                >
+                  {statusTagConfig[session.state].text}
+                </Tag>
+                {session.requirement && (
+                  <Card size="small" className="wh-requirement-card">
+                    <span className="wh-requirement-label">需求</span>
+                    <div className="wh-requirement-text">
+                      {session.requirement}
+                    </div>
+                  </Card>
+                )}
+              </Space>
+            )}
+          </div>
         </Card>
       </Sider>
 
-      <Content style={{ overflow: "auto", padding: 16 }}>
+      {/* ─── Main Content ─── */}
+      <Content className="wh-content">
         <Card
           title={
             <Space>
-              <BulbOutlined />
+              <BulbOutlined style={{ color: "var(--color-warning)" }} />
               <span>代理分析</span>
             </Space>
           }
-          style={{ height: "100%", border: "none" }}
-          styles={{ body: { padding: 16, height: "calc(100% - 57px)", overflow: "auto" } }}
+          className="wh-content-card"
         >
-          {!session ? (
-            <Empty
-              image={<ExperimentOutlined style={{ fontSize: 48, color: "#d9d9d9" }} />}
-              description={
-                <Space orientation="vertical" align="center">
-                  <Text>创建任务开始分析</Text>
-                  <Text type="secondary" style={{ fontSize: 12 }}>
-                    在左侧面板输入需求描述
-                  </Text>
-                </Space>
-              }
-            />
-          ) : session.state === "running" && !agentState?.insights.length ? (
-            <Empty
-              image={<Spin size="large" />}
-              description={
-                <Space orientation="vertical" align="center">
-                  <Text>分析进行中...</Text>
-                  <Text type="secondary" style={{ fontSize: 12 }}>
-                    代理正在处理您的需求
-                  </Text>
-                </Space>
-              }
-            />
-          ) : agentState?.insights.length ? (
-            <Space orientation="vertical" style={{ width: "100%" }}>
-              <Text strong style={{ fontSize: 12, color: "#475569" }}>
-                分析见解
-              </Text>
-              {agentState.insights.map((insight) => (
-                <InsightCard
-                  key={insight.id}
-                  businessRule={insight.businessRule}
-                  risk={insight.risk}
-                  evidence={insight.evidence}
-                  confidence={insight.confidence}
-                />
-              ))}
-            </Space>
-          ) : (
-            <Empty
-              image={<FileTextOutlined style={{ fontSize: 48, color: "#d9d9d9" }} />}
-              description="分析结果将在这里显示"
-            />
-          )}
+          <div style={{ height: "calc(100% - 48px)", overflow: "auto" }}>
+            {!session ? (
+              <Empty
+                image={
+                  <div className="wh-empty-icon">
+                    <ExperimentOutlined />
+                  </div>
+                }
+                description={
+                  <Space direction="vertical" align="center">
+                    <Text style={{ fontWeight: 500 }}>创建任务开始分析</Text>
+                    <Text type="secondary" style={{ fontSize: 12 }}>
+                      在左侧面板输入需求描述
+                    </Text>
+                  </Space>
+                }
+              />
+            ) : session.state === "failed" ? (
+              <Empty
+                image={
+                  <div className="wh-empty-icon" style={{ color: "var(--color-error)" }}>
+                    <FileTextOutlined />
+                  </div>
+                }
+                description={
+                  <Space direction="vertical" align="center">
+                    <Text style={{ fontWeight: 500, color: "var(--color-error)" }}>
+                      分析失败
+                    </Text>
+                    <Text type="secondary" style={{ fontSize: 12, maxWidth: 400, textAlign: "center" }}>
+                      {apiError || "未知错误，请检查 DeepSeek API Key 配置后重试"}
+                    </Text>
+                  </Space>
+                }
+              />
+            ) : session.state === "running" && !agentState?.insights.length ? (
+              <Empty
+                image={<Spin size="large" style={{ marginBottom: 16 }} />}
+                description={
+                  <Space direction="vertical" align="center">
+                    <Text style={{ fontWeight: 500 }}>分析进行中...</Text>
+                    <Text type="secondary" style={{ fontSize: 12 }}>
+                      代理正在处理您的需求
+                    </Text>
+                  </Space>
+                }
+              />
+            ) : agentState?.insights.length ? (
+              <Space direction="vertical" style={{ width: "100%" }}>
+                <div className="wh-section-header">分析见解</div>
+                {agentState.insights.map((insight, index) => (
+                  <div
+                    key={insight.id}
+                    className="wh-animate-in"
+                    style={{ animationDelay: `${index * 40}ms` }}
+                  >
+                    <InsightCard
+                      businessRule={insight.businessRule}
+                      risk={insight.risk}
+                      evidence={insight.evidence}
+                      confidence={insight.confidence}
+                    />
+                  </div>
+                ))}
+              </Space>
+            ) : (
+              <Empty
+                image={
+                  <div className="wh-empty-icon">
+                    <FileTextOutlined />
+                  </div>
+                }
+                description="分析结果将在这里显示"
+              />
+            )}
+          </div>
         </Card>
       </Content>
 
+      {/* ─── Right Panel ─── */}
       <Sider
         width={340}
         theme="light"
-        style={{
-          borderLeft: "1px solid #e5e9f0",
-          overflow: "auto",
-        }}
+        className="wh-right-panel"
+        style={{ overflow: "hidden" }}
       >
         <Card
           title={
             <Space>
-              <ExperimentOutlined />
+              <ExperimentOutlined style={{ color: "var(--color-success)" }} />
               <span>测试用例池</span>
             </Space>
           }
-          styles={{ body: { padding: 16, height: "calc(100vh - 57px)", overflow: "auto" } }}
-          style={{ height: "100%", borderRadius: 0, border: "none" }}
+          className="wh-sidebar-card"
         >
-          {!agentState?.cases.length ? (
-            <Empty description="未生成测试用例" />
-          ) : (
-            <Space orientation="vertical" style={{ width: "100%" }}>
-              <TestCaseCounter counts={caseCounts} />
-              {session?.state === "completed" && agentState && (
-                <ContinueAnalysisButton
-                  state={agentState}
-                  onContinue={handleContinueAnalysis}
-                />
-              )}
-              {agentState.cases.map((testCase) => (
-                <TestCaseCard
-                  key={testCase.id}
-                  testCase={testCase}
-                  onStatusChange={handleCaseStatusChange}
-                />
-              ))}
-            </Space>
-          )}
+          <div style={{ padding: 16, height: "calc(100dvh - 48px)", overflow: "auto" }}>
+            {!agentState?.cases.length ? (
+              <Empty description="未生成测试用例" />
+            ) : (
+              <Space direction="vertical" style={{ width: "100%" }}>
+                <TestCaseCounter counts={caseCounts} />
+                {session?.state === "completed" && agentState && (
+                  <ContinueAnalysisButton
+                    state={agentState}
+                    onContinue={handleContinueAnalysis}
+                  />
+                )}
+                {agentState.cases.map((testCase, index) => (
+                  <div
+                    key={testCase.id}
+                    className="wh-animate-in"
+                    style={{ animationDelay: `${index * 30}ms` }}
+                  >
+                    <TestCaseCard
+                      testCase={testCase}
+                      onStatusChange={handleCaseStatusChange}
+                    />
+                  </div>
+                ))}
+              </Space>
+            )}
+          </div>
         </Card>
       </Sider>
     </Layout>

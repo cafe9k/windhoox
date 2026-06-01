@@ -20,7 +20,7 @@ export function TaskInput({ onSubmit, onLoadDemo, isLoading = false }: TaskInput
   };
 
   return (
-    <Form layout="vertical" style={{ height: "100%", display: "flex", flexDirection: "column" }}>
+    <Form layout="vertical" className="wh-task-form">
       <Form.Item
         label="需求描述"
         style={{ flex: 1, marginBottom: 0, display: "flex", flexDirection: "column" }}
@@ -32,12 +32,13 @@ export function TaskInput({ onSubmit, onLoadDemo, isLoading = false }: TaskInput
           onChange={(e) => setRequirement(e.target.value)}
           disabled={isLoading}
           rows={8}
-          style={{ flex: 1, resize: "none" }}
+          className="wh-task-textarea"
+          style={{ flex: 1, resize: "none", padding: 12 }}
         />
       </Form.Item>
 
       <Form.Item style={{ marginTop: 16, marginBottom: 0 }}>
-        <Space orientation="vertical" style={{ width: "100%" }}>
+        <Space direction="vertical" style={{ width: "100%" }}>
           <Button
             data-testid="start-button"
             type="primary"
@@ -46,6 +47,7 @@ export function TaskInput({ onSubmit, onLoadDemo, isLoading = false }: TaskInput
             disabled={!requirement.trim() || isLoading}
             loading={isLoading}
             block
+            size="middle"
           >
             {isLoading ? "分析中..." : "开始分析"}
           </Button>
@@ -57,6 +59,7 @@ export function TaskInput({ onSubmit, onLoadDemo, isLoading = false }: TaskInput
               onClick={onLoadDemo}
               disabled={isLoading}
               block
+              size="middle"
             >
               加载演示任务
             </Button>
