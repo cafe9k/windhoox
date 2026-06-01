@@ -126,11 +126,15 @@ export function Workbench() {
         <div className="panel-content">
           {!session ? (
             <div className="empty-state">
+              <div className="empty-state-icon">📋</div>
               <p>创建任务开始分析</p>
+              <p className="empty-state-hint">在左侧面板输入需求描述</p>
             </div>
           ) : session.state === "running" && !agentState?.insights.length ? (
             <div className="empty-state">
+              <div className="loading-spinner"></div>
               <p>分析进行中...</p>
+              <p className="empty-state-hint">代理正在处理您的需求</p>
             </div>
           ) : agentState?.insights.length ? (
             <div className="analysis-results">
@@ -149,6 +153,7 @@ export function Workbench() {
             </div>
           ) : (
             <div className="empty-state">
+              <div className="empty-state-icon">📊</div>
               <p>分析结果将在这里显示</p>
             </div>
           )}
