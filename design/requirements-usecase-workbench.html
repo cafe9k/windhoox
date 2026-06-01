@@ -1,0 +1,1176 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>需求分析与用例生成工作台设计稿</title>
+    <style>
+      :root {
+        --bg: #f6f7f8;
+        --panel: #ffffff;
+        --panel-soft: #fafbfc;
+        --line: #e6e9ed;
+        --line-strong: #d6dbe1;
+        --text: #1f2933;
+        --muted: #66737f;
+        --subtle: #9aa5b1;
+        --blue: #2f6fed;
+        --blue-soft: #edf4ff;
+        --green: #16a36a;
+        --green-soft: #eaf8f1;
+        --amber: #c97a12;
+        --amber-soft: #fff4e2;
+        --red: #d04444;
+        --red-soft: #fff0f0;
+        --violet: #6957d4;
+        --shadow: 0 18px 60px rgb(15 23 42 / 0.08);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        overflow: hidden;
+        background: var(--bg);
+        color: var(--text);
+        font-family:
+          Inter, "SF Pro Display", "PingFang SC", "Microsoft YaHei", Arial,
+          sans-serif;
+        font-size: 14px;
+        letter-spacing: 0;
+      }
+
+      button,
+      input,
+      textarea {
+        font: inherit;
+      }
+
+      .shell {
+        display: grid;
+        grid-template-rows: 52px 1fr;
+        width: 100vw;
+        height: 100vh;
+        min-width: 1360px;
+        background:
+          radial-gradient(circle at 72% 18%, rgb(47 111 237 / 0.055), transparent 30%),
+          linear-gradient(180deg, #fbfcfd 0%, #f4f6f8 100%);
+      }
+
+      .topbar {
+        display: grid;
+        grid-template-columns: 286px 1fr 372px;
+        align-items: center;
+        border-bottom: 1px solid var(--line);
+        background: rgb(255 255 255 / 0.86);
+        backdrop-filter: blur(14px);
+      }
+
+      .workspace {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        height: 100%;
+        padding: 0 14px;
+        border-right: 1px solid var(--line);
+      }
+
+      .brand {
+        display: grid;
+        width: 28px;
+        height: 28px;
+        place-items: center;
+        border-radius: 7px;
+        background: #eef1f4;
+        color: #7a858f;
+        font-size: 12px;
+        font-weight: 700;
+      }
+
+      .workspace-name {
+        min-width: 0;
+        overflow: hidden;
+        color: #29333d;
+        font-weight: 700;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .chevron {
+        margin-left: auto;
+        color: var(--subtle);
+      }
+
+      .project-title {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-width: 0;
+        padding: 0 18px;
+      }
+
+      .project-title .collapse {
+        display: grid;
+        width: 26px;
+        height: 26px;
+        place-items: center;
+        border: 1px solid var(--line);
+        border-radius: 7px;
+        color: var(--muted);
+      }
+
+      .project-text {
+        min-width: 0;
+        overflow: hidden;
+        font-size: 15px;
+        font-weight: 700;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .top-actions {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 8px;
+        padding: 0 14px;
+      }
+
+      .top-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        height: 30px;
+        padding: 0 10px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--panel);
+        color: #4b5864;
+        font-size: 12px;
+        font-weight: 600;
+      }
+
+      .main {
+        display: grid;
+        grid-template-columns: 286px minmax(560px, 1fr) 450px 48px;
+        min-height: 0;
+      }
+
+      .sidebar {
+        display: grid;
+        grid-template-rows: auto auto 1fr auto;
+        min-height: 0;
+        border-right: 1px solid var(--line);
+        background: rgb(250 251 252 / 0.78);
+      }
+
+      .new-session {
+        margin: 12px;
+      }
+
+      .new-session button {
+        width: 100%;
+        height: 36px;
+        border: 1px solid var(--line-strong);
+        border-radius: 8px;
+        background: #f1f3f5;
+        color: #4c5965;
+        font-weight: 700;
+      }
+
+      .segmented {
+        display: grid;
+        grid-template-columns: 1fr 1fr 36px;
+        gap: 4px;
+        margin: 2px 12px 12px;
+        padding: 4px;
+        border-radius: 8px;
+        background: #eef1f3;
+      }
+
+      .segmented button {
+        height: 30px;
+        border: 0;
+        border-radius: 7px;
+        background: transparent;
+        color: #5f6d78;
+        font-size: 12px;
+        font-weight: 700;
+      }
+
+      .segmented .active {
+        background: #fff;
+        color: #27313b;
+        box-shadow: 0 1px 4px rgb(15 23 42 / 0.08);
+      }
+
+      .session-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin: 0 14px 8px;
+        color: #7b8792;
+        font-size: 12px;
+      }
+
+      .session-list {
+        min-height: 0;
+        margin: 0 10px;
+        overflow: hidden;
+      }
+
+      .session-group {
+        overflow: hidden;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--panel);
+      }
+
+      .group-title {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        height: 34px;
+        padding: 0 10px;
+        border-bottom: 1px solid var(--line);
+        color: #4e5a65;
+        font-size: 12px;
+        font-weight: 700;
+      }
+
+      .count-pill {
+        display: inline-flex;
+        align-items: center;
+        height: 18px;
+        padding: 0 6px;
+        border-radius: 999px;
+        background: #eef2f6;
+        color: #7c8791;
+        font-size: 11px;
+      }
+
+      .session-item {
+        display: grid;
+        grid-template-columns: 28px 1fr auto;
+        gap: 8px;
+        align-items: start;
+        min-height: 62px;
+        padding: 10px;
+        border-bottom: 1px solid #eef1f3;
+      }
+
+      .session-item:last-child {
+        border-bottom: 0;
+      }
+
+      .session-item.selected {
+        background: #f7fbff;
+        box-shadow: inset 3px 0 0 var(--blue);
+      }
+
+      .session-icon {
+        display: grid;
+        width: 24px;
+        height: 24px;
+        place-items: center;
+        border-radius: 6px;
+        background: var(--blue-soft);
+        color: var(--blue);
+        font-size: 11px;
+        font-weight: 800;
+      }
+
+      .session-icon.green {
+        background: var(--green-soft);
+        color: var(--green);
+      }
+
+      .session-icon.amber {
+        background: var(--amber-soft);
+        color: var(--amber);
+      }
+
+      .session-copy {
+        min-width: 0;
+      }
+
+      .session-title {
+        overflow: hidden;
+        font-size: 12px;
+        font-weight: 700;
+        line-height: 1.25;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .session-meta {
+        margin-top: 4px;
+        overflow: hidden;
+        color: #8a96a2;
+        font-size: 11px;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .state {
+        display: inline-flex;
+        align-items: center;
+        height: 20px;
+        padding: 0 6px;
+        border-radius: 999px;
+        font-size: 11px;
+        font-weight: 700;
+        white-space: nowrap;
+      }
+
+      .state.ok {
+        background: var(--green-soft);
+        color: var(--green);
+      }
+
+      .state.work {
+        background: var(--blue-soft);
+        color: var(--blue);
+      }
+
+      .state.warn {
+        background: var(--amber-soft);
+        color: var(--amber);
+      }
+
+      .sidebar-foot {
+        display: grid;
+        grid-template-columns: 28px 1fr auto;
+        gap: 8px;
+        align-items: center;
+        height: 58px;
+        padding: 0 12px;
+        border-top: 1px solid var(--line);
+      }
+
+      .avatar {
+        display: grid;
+        width: 28px;
+        height: 28px;
+        place-items: center;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #dbeafe, #fce7b2);
+        color: #34404b;
+        font-size: 11px;
+        font-weight: 800;
+      }
+
+      .user-name {
+        font-size: 12px;
+        font-weight: 700;
+      }
+
+      .user-sub {
+        margin-top: 2px;
+        color: var(--subtle);
+        font-size: 11px;
+      }
+
+      .chat {
+        display: grid;
+        grid-template-rows: auto 1fr auto;
+        min-width: 0;
+        min-height: 0;
+        background: rgb(255 255 255 / 0.56);
+      }
+
+      .chat-context {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 16px;
+        align-items: center;
+        min-height: 78px;
+        padding: 14px 18px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .context-title {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-width: 0;
+      }
+
+      .source-logo {
+        display: grid;
+        width: 38px;
+        height: 38px;
+        place-items: center;
+        border: 1px solid #ffe0c7;
+        border-radius: 10px;
+        background: #fff8f1;
+        color: #e36b1f;
+        font-weight: 900;
+      }
+
+      .requirement-name {
+        overflow: hidden;
+        font-weight: 800;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .requirement-path {
+        margin-top: 4px;
+        overflow: hidden;
+        color: #85919c;
+        font-size: 12px;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .progress-strip {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        color: #66737f;
+        font-size: 12px;
+        font-weight: 700;
+      }
+
+      .step-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--line-strong);
+      }
+
+      .step-dot.done {
+        background: var(--green);
+      }
+
+      .step-dot.current {
+        background: var(--blue);
+        box-shadow: 0 0 0 4px rgb(47 111 237 / 0.12);
+      }
+
+      .messages {
+        min-height: 0;
+        padding: 18px 20px 16px;
+        overflow: hidden;
+      }
+
+      .message-row {
+        display: flex;
+        margin-bottom: 18px;
+      }
+
+      .message-row.user {
+        justify-content: flex-end;
+      }
+
+      .bubble {
+        max-width: min(760px, 82%);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        background: #fff;
+        padding: 14px 16px;
+        box-shadow: 0 8px 24px rgb(15 23 42 / 0.04);
+      }
+
+      .user .bubble {
+        border-color: #dfe9ff;
+        background: #f7fbff;
+      }
+
+      .assistant-title {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 10px;
+        color: #3c4650;
+        font-size: 13px;
+        font-weight: 800;
+      }
+
+      .assistant-title .mark {
+        display: grid;
+        width: 24px;
+        height: 24px;
+        place-items: center;
+        border-radius: 7px;
+        background: #eef2f6;
+        color: #65727e;
+        font-size: 12px;
+      }
+
+      .bubble p {
+        margin: 0;
+        color: #34404b;
+        line-height: 1.75;
+      }
+
+      .insight-card {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 10px;
+        margin-top: 14px;
+      }
+
+      .insight {
+        min-height: 92px;
+        padding: 12px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--panel-soft);
+      }
+
+      .insight .label {
+        color: #7b8792;
+        font-size: 11px;
+        font-weight: 800;
+      }
+
+      .insight .value {
+        margin-top: 6px;
+        color: #27313b;
+        font-size: 13px;
+        font-weight: 800;
+        line-height: 1.45;
+      }
+
+      .task-board {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-top: 12px;
+      }
+
+      .task-card {
+        padding: 12px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #fff;
+      }
+
+      .task-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        margin-bottom: 6px;
+      }
+
+      .task-title {
+        min-width: 0;
+        overflow: hidden;
+        font-size: 13px;
+        font-weight: 800;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .task-card ul {
+        margin: 0;
+        padding-left: 18px;
+        color: #5d6974;
+        font-size: 12px;
+        line-height: 1.7;
+      }
+
+      .composer {
+        margin: 0 18px 16px;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        background: #fff;
+        box-shadow: 0 12px 34px rgb(15 23 42 / 0.06);
+      }
+
+      .composer textarea {
+        display: block;
+        width: 100%;
+        height: 76px;
+        resize: none;
+        border: 0;
+        outline: 0;
+        padding: 14px 16px 4px;
+        color: #4e5a65;
+        background: transparent;
+      }
+
+      .composer-actions {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        height: 42px;
+        padding: 0 10px 8px;
+      }
+
+      .tool-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .mini-button {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        height: 28px;
+        padding: 0 9px;
+        border: 1px solid var(--line);
+        border-radius: 7px;
+        background: #fff;
+        color: #5f6d78;
+        font-size: 12px;
+        font-weight: 700;
+      }
+
+      .send {
+        display: grid;
+        width: 32px;
+        height: 32px;
+        place-items: center;
+        border: 0;
+        border-radius: 8px;
+        background: #65717d;
+        color: #fff;
+        font-weight: 900;
+      }
+
+      .cases {
+        display: grid;
+        grid-template-rows: auto auto 1fr;
+        min-height: 0;
+        border-left: 1px solid var(--line);
+        background: #fbfcfd;
+      }
+
+      .case-head {
+        padding: 16px 16px 12px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .case-title-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+
+      .case-title {
+        font-size: 16px;
+        font-weight: 900;
+      }
+
+      .case-actions {
+        display: flex;
+        gap: 6px;
+      }
+
+      .icon-button {
+        display: grid;
+        width: 30px;
+        height: 30px;
+        place-items: center;
+        border: 1px solid var(--line);
+        border-radius: 7px;
+        background: #fff;
+        color: #5f6d78;
+        font-weight: 800;
+      }
+
+      .coverage {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 10px;
+        align-items: center;
+        margin-top: 14px;
+        padding: 12px;
+        border: 1px solid #dfe9ff;
+        border-radius: 8px;
+        background: #f7fbff;
+      }
+
+      .coverage-label {
+        color: #64717d;
+        font-size: 12px;
+        font-weight: 700;
+      }
+
+      .coverage-value {
+        margin-top: 4px;
+        font-size: 18px;
+        font-weight: 900;
+      }
+
+      .bar {
+        overflow: hidden;
+        width: 128px;
+        height: 8px;
+        border-radius: 999px;
+        background: #e4ecf8;
+      }
+
+      .bar span {
+        display: block;
+        width: 86%;
+        height: 100%;
+        border-radius: inherit;
+        background: linear-gradient(90deg, var(--green), var(--blue));
+      }
+
+      .case-tabs {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 5px;
+        padding: 10px 16px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .case-tabs button {
+        height: 30px;
+        border: 1px solid transparent;
+        border-radius: 7px;
+        background: transparent;
+        color: #66737f;
+        font-size: 12px;
+        font-weight: 800;
+      }
+
+      .case-tabs .active {
+        border-color: var(--line);
+        background: #fff;
+        color: #26313a;
+      }
+
+      .case-list {
+        min-height: 0;
+        padding: 12px 12px 16px;
+        overflow: hidden;
+      }
+
+      .case-card {
+        margin-bottom: 10px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #fff;
+        box-shadow: 0 8px 20px rgb(15 23 42 / 0.035);
+      }
+
+      .case-card.flagged {
+        border-color: #ffd8b1;
+      }
+
+      .case-card-head {
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        gap: 8px;
+        align-items: center;
+        padding: 12px 12px 8px;
+      }
+
+      .priority {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 30px;
+        height: 22px;
+        border-radius: 6px;
+        font-size: 11px;
+        font-weight: 900;
+      }
+
+      .priority.p0 {
+        background: var(--red-soft);
+        color: var(--red);
+      }
+
+      .priority.p1 {
+        background: var(--amber-soft);
+        color: var(--amber);
+      }
+
+      .priority.p2 {
+        background: var(--blue-soft);
+        color: var(--blue);
+      }
+
+      .case-name {
+        min-width: 0;
+        overflow: hidden;
+        font-size: 13px;
+        font-weight: 900;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .case-state {
+        color: #74808b;
+        font-size: 11px;
+        font-weight: 800;
+      }
+
+      .case-body {
+        padding: 0 12px 10px;
+        color: #4f5c67;
+        font-size: 12px;
+        line-height: 1.65;
+      }
+
+      .trace {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        padding: 0 12px 12px;
+      }
+
+      .trace span {
+        display: inline-flex;
+        height: 22px;
+        align-items: center;
+        border-radius: 999px;
+        background: #f0f2f5;
+        padding: 0 8px;
+        color: #6a7681;
+        font-size: 11px;
+        font-weight: 700;
+      }
+
+      .rail {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+        padding-top: 14px;
+        border-left: 1px solid var(--line);
+        background: #f3f5f7;
+      }
+
+      .rail-button {
+        display: grid;
+        width: 30px;
+        height: 30px;
+        place-items: center;
+        border: 1px solid var(--line);
+        border-radius: 9px;
+        background: #fff;
+        color: #6d7883;
+        font-size: 12px;
+        font-weight: 900;
+      }
+
+      .rail-label {
+        margin-top: 4px;
+        writing-mode: vertical-rl;
+        color: #a0aab4;
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 2px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="shell">
+      <header class="topbar">
+        <div class="workspace">
+          <div class="brand">默</div>
+          <div class="workspace-name">默认工作区</div>
+          <div class="chevron">v</div>
+        </div>
+        <div class="project-title">
+          <div class="collapse">|&lt;</div>
+          <div class="project-text">共同购买推荐资源逻辑，主资源是期票，推荐子资源为包资源时的用例分析</div>
+        </div>
+        <div class="top-actions">
+          <div class="top-chip">本地运行</div>
+          <div class="top-chip">当前资料 5</div>
+          <div class="top-chip">消息</div>
+        </div>
+      </header>
+
+      <main class="main">
+        <aside class="sidebar">
+          <div class="new-session">
+            <button>+ 新建测试会话</button>
+          </div>
+
+          <div class="segmented">
+            <button class="active">会话</button>
+            <button>资料</button>
+            <button>筛</button>
+          </div>
+
+          <section class="session-list">
+            <div class="session-head">
+              <span>测试会话</span>
+              <span>1 个窗口 / 12 个会话</span>
+            </div>
+            <div class="session-group">
+              <div class="group-title">
+                <span>当前窗口</span>
+                <span class="count-pill">8</span>
+              </div>
+              <article class="session-item selected">
+                <div class="session-icon">TC</div>
+                <div class="session-copy">
+                  <div class="session-title">共同购买推荐资源逻辑</div>
+                  <div class="session-meta">PRD + GitLab + 接口文档</div>
+                </div>
+                <span class="state work">生成中</span>
+              </article>
+              <article class="session-item">
+                <div class="session-icon green">UC</div>
+                <div class="session-copy">
+                  <div class="session-title">整保研发资源日历 2026</div>
+                  <div class="session-meta">18 条用例，3 条待评审</div>
+                </div>
+                <span class="state ok">已生成</span>
+              </article>
+              <article class="session-item">
+                <div class="session-icon amber">QA</div>
+                <div class="session-copy">
+                  <div class="session-title">办签材料自动分类一期</div>
+                  <div class="session-meta">缺少接口异常样例</div>
+                </div>
+                <span class="state warn">待补充</span>
+              </article>
+              <article class="session-item">
+                <div class="session-icon">RD</div>
+                <div class="session-copy">
+                  <div class="session-title">埋点表飞书云文档</div>
+                  <div class="session-meta">覆盖矩阵 82%</div>
+                </div>
+                <span class="state ok">完成</span>
+              </article>
+              <article class="session-item">
+                <div class="session-icon green">API</div>
+                <div class="session-copy">
+                  <div class="session-title">资源位推荐接口重构</div>
+                  <div class="session-meta">代码路径已关联</div>
+                </div>
+                <span class="state ok">已生成</span>
+              </article>
+              <article class="session-item">
+                <div class="session-icon">BUG</div>
+                <div class="session-copy">
+                  <div class="session-title">2.0 功能迭代问题记录</div>
+                  <div class="session-meta">回归用例 26 条</div>
+                </div>
+                <span class="state work">分析中</span>
+              </article>
+            </div>
+          </section>
+
+          <footer class="sidebar-foot">
+            <div class="avatar">DC</div>
+            <div>
+              <div class="user-name">DAXIN CHEN</div>
+              <div class="user-sub">本机知识库已同步</div>
+            </div>
+            <div class="icon-button">=</div>
+          </footer>
+        </aside>
+
+        <section class="chat">
+          <div class="chat-context">
+            <div class="context-title">
+              <div class="source-logo">PRD</div>
+              <div>
+                <div class="requirement-name">tdd-resource-service 需求分析会话</div>
+                <div class="requirement-path">GitLab 仓库：vacation-engine / ttd-resource-service · 当前分支 feat/recommend-rule</div>
+              </div>
+            </div>
+            <div class="progress-strip">
+              <span class="step-dot done"></span>
+              <span>资料读取</span>
+              <span class="step-dot done"></span>
+              <span>需求洞察</span>
+              <span class="step-dot current"></span>
+              <span>生成用例</span>
+            </div>
+          </div>
+
+          <div class="messages">
+            <div class="message-row user">
+              <div class="bubble">
+                <p>共同购买推荐逻辑里，主资源是期票，推荐子资源为包资源时，对于资源有什么限制？请基于 PRD 和代码生成测试用例。</p>
+              </div>
+            </div>
+
+            <div class="message-row">
+              <div class="bubble">
+                <div class="assistant-title">
+                  <span class="mark">AI</span>
+                  <span>需求洞察助手</span>
+                </div>
+                <p>我先补齐产研视角的关键边界：这不是单纯“推荐展示”逻辑，而是资源类型、价格模式、前置过滤和后置过滤共同决定的测试空间。建议把用例分成规则正确性、过滤优先级、异常兜底、数据追踪四组。</p>
+
+                <div class="insight-card">
+                  <div class="insight">
+                    <div class="label">核心结论</div>
+                    <div class="value">包资源被全局过滤，原则上不应作为推荐子资源展示</div>
+                  </div>
+                  <div class="insight">
+                    <div class="label">风险补充</div>
+                    <div class="value">期票主资源存在补充限制，部分场景仅允许参与搭售</div>
+                  </div>
+                  <div class="insight">
+                    <div class="label">待确认问题</div>
+                    <div class="value">是否需要覆盖配置绕过、缓存脏数据和灰度开关</div>
+                  </div>
+                </div>
+
+                <div class="task-board">
+                  <div class="task-card">
+                    <div class="task-top">
+                      <div class="task-title">已识别测试维度</div>
+                      <span class="state ok">6 类</span>
+                    </div>
+                    <ul>
+                      <li>主资源为期票，子资源为包资源</li>
+                      <li>前置过滤与后置过滤命中顺序</li>
+                      <li>页面类型、价格模式、库存状态组合</li>
+                    </ul>
+                  </div>
+                  <div class="task-card">
+                    <div class="task-top">
+                      <div class="task-title">建议补充资料</div>
+                      <span class="state warn">2 项</span>
+                    </div>
+                    <ul>
+                      <li>包资源产品类型枚举表</li>
+                      <li>推荐链路埋点字段说明</li>
+                      <li>线上灰度配置和兜底策略</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="composer">
+            <textarea placeholder="输入消息，或使用 @mention 让 Agent 处理任务">继续生成边界场景，并把每条用例关联到需求段落和代码判断点。</textarea>
+            <div class="composer-actions">
+              <div class="tool-row">
+                <button class="mini-button">上传资料</button>
+                <button class="mini-button">关联代码</button>
+                <button class="mini-button">生成用例</button>
+                <button class="mini-button">覆盖检查</button>
+              </div>
+              <div class="tool-row">
+                <button class="mini-button">通用助手</button>
+                <button class="send">&gt;</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <aside class="cases">
+          <div class="case-head">
+            <div class="case-title-row">
+              <div>
+                <div class="case-title">最终用例列表</div>
+                <div class="requirement-path">18 条用例 · 6 条关键路径 · 7 条异常与边界</div>
+              </div>
+              <div class="case-actions">
+                <button class="icon-button">搜</button>
+                <button class="icon-button">导</button>
+              </div>
+            </div>
+            <div class="coverage">
+              <div>
+                <div class="coverage-label">需求覆盖度</div>
+                <div class="coverage-value">86%</div>
+              </div>
+              <div class="bar"><span></span></div>
+            </div>
+          </div>
+
+          <div class="case-tabs">
+            <button class="active">用例</button>
+            <button>覆盖矩阵</button>
+            <button>缺口</button>
+          </div>
+
+          <div class="case-list">
+            <article class="case-card flagged">
+              <div class="case-card-head">
+                <span class="priority p0">P0</span>
+                <div class="case-name">包资源作为推荐子资源时被拦截</div>
+                <div class="case-state">待评审</div>
+              </div>
+              <div class="case-body">前置条件：主资源为期票，推荐池包含包资源。步骤：触发共同购买推荐，校验返回列表不包含包资源，且日志记录过滤原因。</div>
+              <div class="trace">
+                <span>需求段落 2.1</span>
+                <span>PackingPreFilter</span>
+                <span>规则正确性</span>
+              </div>
+            </article>
+
+            <article class="case-card">
+              <div class="case-card-head">
+                <span class="priority p0">P0</span>
+                <div class="case-name">后置过滤再次移除包资源兜底</div>
+                <div class="case-state">已生成</div>
+              </div>
+              <div class="case-body">构造前置过滤漏放场景，检查最终输出前的后置过滤仍能移除包资源，不受页面来源影响。</div>
+              <div class="trace">
+                <span>PackingPostFilter</span>
+                <span>兜底保护</span>
+              </div>
+            </article>
+
+            <article class="case-card">
+              <div class="case-card-head">
+                <span class="priority p1">P1</span>
+                <div class="case-name">期票主资源在常规列表页不参与搭售</div>
+                <div class="case-state">待确认</div>
+              </div>
+              <div class="case-body">页面类型为常规列表页时，期票主资源不发起“寻找推荐子资源”动作，推荐结果为空且无异常。</div>
+              <div class="trace">
+                <span>MainResourceLimitPreFilter</span>
+                <span>页面类型</span>
+              </div>
+            </article>
+
+            <article class="case-card">
+              <div class="case-card-head">
+                <span class="priority p1">P1</span>
+                <div class="case-name">填写页与订后页允许期票参与搭售</div>
+                <div class="case-state">已生成</div>
+              </div>
+              <div class="case-body">在特殊页面场景下，主资源为期票仍可进入推荐链路，但子资源为包资源时继续被过滤。</div>
+              <div class="trace">
+                <span>例外场景</span>
+                <span>组合规则</span>
+              </div>
+            </article>
+
+            <article class="case-card">
+              <div class="case-card-head">
+                <span class="priority p2">P2</span>
+                <div class="case-name">过滤命中埋点和原因码完整</div>
+                <div class="case-state">草稿</div>
+              </div>
+              <div class="case-body">验证每个过滤节点输出统一 reasonCode，便于 QA、产品和研发复盘覆盖缺口。</div>
+              <div class="trace">
+                <span>可观测性</span>
+                <span>埋点字段</span>
+              </div>
+            </article>
+          </div>
+        </aside>
+
+        <nav class="rail">
+          <button class="rail-button">会</button>
+          <button class="rail-button">档</button>
+          <button class="rail-button">例</button>
+          <button class="rail-button">图</button>
+          <button class="rail-button">设</button>
+          <div class="rail-label">本地应用</div>
+        </nav>
+      </main>
+    </div>
+  </body>
+</html>
