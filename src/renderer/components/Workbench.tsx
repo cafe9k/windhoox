@@ -261,7 +261,7 @@ export function Workbench() {
               onLoadDemo={handleLoadDemo}
             />
           ) : (
-            <Space direction="vertical" style={{ width: "100%" }}>
+            <Space orientation="vertical" style={{ width: "100%" }}>
               <Tag color={statusTagConfig[session.state].color}>
                 {statusTagConfig[session.state].text}
               </Tag>
@@ -295,7 +295,7 @@ export function Workbench() {
             <Empty
               image={<ExperimentOutlined style={{ fontSize: 48, color: "#d9d9d9" }} />}
               description={
-                <Space direction="vertical" align="center">
+                <Space orientation="vertical" align="center">
                   <Text>创建任务开始分析</Text>
                   <Text type="secondary" style={{ fontSize: 12 }}>
                     在左侧面板输入需求描述
@@ -307,7 +307,7 @@ export function Workbench() {
             <Empty
               image={<Spin size="large" />}
               description={
-                <Space direction="vertical" align="center">
+                <Space orientation="vertical" align="center">
                   <Text>分析进行中...</Text>
                   <Text type="secondary" style={{ fontSize: 12 }}>
                     代理正在处理您的需求
@@ -316,7 +316,7 @@ export function Workbench() {
               }
             />
           ) : agentState?.insights.length ? (
-            <Space direction="vertical" style={{ width: "100%" }}>
+            <Space orientation="vertical" style={{ width: "100%" }}>
               <Text strong style={{ fontSize: 12, color: "#475569" }}>
                 分析见解
               </Text>
@@ -360,7 +360,7 @@ export function Workbench() {
           {!agentState?.cases.length ? (
             <Empty description="未生成测试用例" />
           ) : (
-            <Space direction="vertical" style={{ width: "100%" }}>
+            <Space orientation="vertical" style={{ width: "100%" }}>
               <TestCaseCounter counts={caseCounts} />
               {session?.state === "completed" && agentState && (
                 <ContinueAnalysisButton
