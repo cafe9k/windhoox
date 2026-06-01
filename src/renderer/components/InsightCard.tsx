@@ -8,6 +8,12 @@ interface InsightCardProps {
   confidence: "high" | "medium" | "low";
 }
 
+const confidenceMap = {
+  high: "高",
+  medium: "中",
+  low: "低"
+};
+
 export function InsightCard({
   businessRule,
   risk,
@@ -18,24 +24,24 @@ export function InsightCard({
     <div className={`insight-card insight-${confidence}`}>
       {businessRule && (
         <div className="insight-section">
-          <strong>Business Rule:</strong>
+          <strong>业务规则:</strong>
           <p>{businessRule}</p>
         </div>
       )}
       {risk && (
         <div className="insight-section">
-          <strong>Risk:</strong>
+          <strong>风险:</strong>
           <p>{risk}</p>
         </div>
       )}
       {evidence && (
         <div className="insight-section">
-          <strong>Evidence:</strong>
+          <strong>证据:</strong>
           <p>{evidence}</p>
         </div>
       )}
       <div className="confidence-badge">
-        Confidence: <strong>{confidence.toUpperCase()}</strong>
+        信心度: <strong>{confidenceMap[confidence]}</strong>
       </div>
     </div>
   );

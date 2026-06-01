@@ -34,16 +34,16 @@ describe("Workbench", () => {
 
     const headers = container.querySelectorAll(".panel-header");
     expect(headers.length).toBe(3);
-    expect(headers[0].textContent).toContain("Task & Context");
-    expect(headers[1].textContent).toContain("Agent Analysis");
-    expect(headers[2].textContent).toContain("Test Asset Pool");
+    expect(headers[0].textContent).toContain("任务与上下文");
+    expect(headers[1].textContent).toContain("代理分析");
+    expect(headers[2].textContent).toContain("测试用例池");
   });
 
   it("shows empty state when no session exists", () => {
     const { container } = render(<Workbench />);
 
-    expect(container.textContent).toContain("Create a task to begin analysis");
-    expect(container.textContent).toContain("No test cases generated");
+    expect(container.textContent).toContain("创建任务开始分析");
+    expect(container.textContent).toContain("未生成测试用例");
   });
 
   it("shows task input form when no session exists", () => {
@@ -79,7 +79,7 @@ describe("Workbench", () => {
     fireEvent.click(button);
 
     await waitFor(() => {
-      expect(container.textContent).toContain("Analyzing");
+      expect(container.textContent).toContain("分析中...");
     });
   });
 

@@ -7,8 +7,10 @@ import { registerAgentHandlers } from "./agent-handlers.js";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const devServerUrl = process.env.VITE_DEV_SERVER_URL ?? "http://127.0.0.1:5173";
 
+let mainWindow: BrowserWindow | null = null;
+
 async function createMainWindow() {
-  const mainWindow = new BrowserWindow({
+  mainWindow = new BrowserWindow({
     width: 960,
     height: 640,
     minWidth: 800,
@@ -38,8 +40,8 @@ async function createMainWindow() {
 }
 
 app.whenReady().then(async () => {
-  registerAgentHandlers();
   await createMainWindow();
+  registerAgentHandlers(mainWindow);
   initAutoUpdater();
 
   app.on("activate", () => {

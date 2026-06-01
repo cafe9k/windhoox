@@ -48,11 +48,11 @@ export function Workbench() {
             : null
         );
 
-        // Listen for agent events
+        // 监听代理事件
         agentApi.onEvent((event: AgentEvent) => {
           dispatch(event);
 
-          // Update session state based on event
+          // 根据事件更新会话状态
           if (event.type === "run_completed") {
             setSession((prev) =>
               prev ? { ...prev, state: "completed" } : null
@@ -98,21 +98,21 @@ export function Workbench() {
   return (
     <div className="workbench">
       <aside className="workbench-panel left-panel">
-        <div className="panel-header">Task & Context</div>
+        <div className="panel-header">任务与上下文</div>
         <div className="panel-content">
           {!session ? (
             <TaskInput onSubmit={handleStartAnalysis} />
           ) : (
             <div className="session-info">
               <div className="session-state" data-state={session.state}>
-                {session.state === "running" && "Analyzing..."}
-                {session.state === "completed" && "Analysis Complete"}
-                {session.state === "failed" && "Analysis Failed"}
-                {session.state === "idle" && "Ready"}
+                {session.state === "running" && "分析中..."}
+                {session.state === "completed" && "分析完成"}
+                {session.state === "failed" && "分析失败"}
+                {session.state === "idle" && "就绪"}
               </div>
               {session.requirement && (
                 <div className="session-requirement">
-                  <strong>Requirement:</strong>
+                  <strong>需求:</strong>
                   <p>{session.requirement}</p>
                 </div>
               )}
@@ -122,20 +122,20 @@ export function Workbench() {
       </aside>
 
       <main className="workbench-panel center-panel">
-        <div className="panel-header">Agent Analysis</div>
+        <div className="panel-header">代理分析</div>
         <div className="panel-content">
           {!session ? (
             <div className="empty-state">
-              <p>Create a task to begin analysis</p>
+              <p>创建任务开始分析</p>
             </div>
           ) : session.state === "running" && !agentState?.insights.length ? (
             <div className="empty-state">
-              <p>Analysis in progress...</p>
+              <p>分析进行中...</p>
             </div>
           ) : agentState?.insights.length ? (
             <div className="analysis-results">
               <div className="insights-section">
-                <h4>Insights</h4>
+                <h4>分析见解</h4>
                 {agentState.insights.map((insight) => (
                   <InsightCard
                     key={insight.id}
@@ -149,18 +149,18 @@ export function Workbench() {
             </div>
           ) : (
             <div className="empty-state">
-              <p>Analysis results will appear here</p>
+              <p>分析结果将在这里显示</p>
             </div>
           )}
         </div>
       </main>
 
       <aside className="workbench-panel right-panel">
-        <div className="panel-header">Test Asset Pool</div>
+        <div className="panel-header">测试用例池</div>
         <div className="panel-content">
           {!agentState?.cases.length ? (
             <div className="empty-state">
-              <p>No test cases generated</p>
+              <p>未生成测试用例</p>
             </div>
           ) : (
             <div className="cases-section">

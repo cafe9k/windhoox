@@ -18,7 +18,7 @@ describe("TaskInput", () => {
 
     const button = container.querySelector(".start-button");
     expect(button).toBeInTheDocument();
-    expect(button?.textContent).toBe("Start Analysis");
+    expect(button?.textContent).toBe("开始分析");
   });
 
   it("disables the start button when textarea is empty", () => {
@@ -69,7 +69,7 @@ describe("TaskInput", () => {
     const { container } = render(<TaskInput onSubmit={onSubmit} isLoading={true} />);
 
     const button = container.querySelector(".start-button");
-    expect(button?.textContent).toBe("Analyzing...");
+    expect(button?.textContent).toBe("分析中...");
   });
 
   it("trims whitespace before calling onSubmit", () => {

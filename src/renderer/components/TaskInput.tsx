@@ -21,11 +21,11 @@ export function TaskInput({ onSubmit, isLoading = false }: TaskInputProps) {
   return (
     <form className="task-input" onSubmit={handleSubmit}>
       <div className="input-group">
-        <label htmlFor="requirement-input">Requirement</label>
+        <label htmlFor="requirement-input">需求描述</label>
         <textarea
           id="requirement-input"
           className="requirement-textarea"
-          placeholder="Describe the requirement or feature to test..."
+          placeholder="描述需要测试的功能或需求..."
           value={requirement}
           onChange={(e) => setRequirement(e.target.value)}
           disabled={isLoading}
@@ -39,7 +39,7 @@ export function TaskInput({ onSubmit, isLoading = false }: TaskInputProps) {
           className="start-button"
           disabled={isButtonDisabled}
         >
-          {isLoading ? "Analyzing..." : "Start Analysis"}
+          {isLoading ? "分析中..." : "开始分析"}
         </button>
       </div>
     </form>

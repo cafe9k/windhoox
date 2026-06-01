@@ -14,8 +14,8 @@ describe("App", () => {
   it("renders the workbench layout", () => {
     render(<App />);
 
-    expect(screen.getByText("Task & Context")).toBeInTheDocument();
-    expect(screen.getByText("Agent Analysis")).toBeInTheDocument();
-    expect(screen.getByText("Test Asset Pool")).toBeInTheDocument();
+    expect(screen.getByText("任务与上下文")).toBeInTheDocument();
+    expect(screen.getByText("代理分析")).toBeInTheDocument();
+    expect(screen.getByText("测试用例池")).toBeInTheDocument();
   });
 });

@@ -16,17 +16,17 @@ interface TestCaseCardProps {
   onStatusChange: (caseId: string, status: TestCase["status"]) => void;
 }
 
+const statusLabel = {
+  pending: "待审核",
+  accepted: "已接受",
+  rejected: "已拒绝",
+  ask_product: "询问产品",
+  ask_engineering: "询问工程",
+  needs_context: "需要上下文"
+};
+
 export function TestCaseCard({ testCase, onStatusChange }: TestCaseCardProps) {
   const [expanded, setExpanded] = useState(false);
-
-  const statusLabel = {
-    pending: "Pending",
-    accepted: "Accepted",
-    rejected: "Rejected",
-    ask_product: "Ask Product",
-    ask_engineering: "Ask Engineering",
-    needs_context: "Needs Context"
-  };
 
   const statusClass = testCase.status.replace(/_/g, "-");
 
@@ -45,13 +45,13 @@ export function TestCaseCard({ testCase, onStatusChange }: TestCaseCardProps) {
       {expanded && (
         <div className="case-content">
           <div className="case-section">
-            <strong>Description:</strong>
+            <strong>描述:</strong>
             <p>{testCase.description}</p>
           </div>
 
           {testCase.preconditions.length > 0 && (
             <div className="case-section">
-              <strong>Preconditions:</strong>
+              <strong>前置条件:</strong>
               <ul>
                 {testCase.preconditions.map((pc, i) => (
                   <li key={i}>{pc}</li>
@@ -62,7 +62,7 @@ export function TestCaseCard({ testCase, onStatusChange }: TestCaseCardProps) {
 
           {testCase.steps.length > 0 && (
             <div className="case-section">
-              <strong>Steps:</strong>
+              <strong>步骤:</strong>
               <ol>
                 {testCase.steps.map((step, i) => (
                   <li key={i}>{step}</li>
@@ -72,7 +72,7 @@ export function TestCaseCard({ testCase, onStatusChange }: TestCaseCardProps) {
           )}
 
           <div className="case-section">
-            <strong>Expected Result:</strong>
+            <strong>预期结果:</strong>
             <p>{testCase.expectedResult}</p>
           </div>
 
@@ -81,19 +81,19 @@ export function TestCaseCard({ testCase, onStatusChange }: TestCaseCardProps) {
               className="action-btn accept-btn"
               onClick={() => onStatusChange(testCase.id, "accepted")}
             >
-              Accept
+              接受
             </button>
             <button
               className="action-btn reject-btn"
               onClick={() => onStatusChange(testCase.id, "rejected")}
             >
-              Reject
+              拒绝
             </button>
             <button
               className="action-btn clarify-btn"
               onClick={() => onStatusChange(testCase.id, "ask_product")}
             >
-              Clarify
+              澄清
             </button>
           </div>
         </div>
