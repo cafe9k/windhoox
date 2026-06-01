@@ -23,6 +23,9 @@ describe("TaskInput", () => {
     const onSubmit = vi.fn();
     render(<TaskInput onSubmit={onSubmit} />);
 
+    const textarea = screen.getByRole("textbox") as HTMLTextAreaElement;
+    fireEvent.change(textarea, { target: { value: "" } });
+
     const button = screen.getByRole("button", { name: /开始分析/ });
     expect(button).toBeDisabled();
   });
@@ -31,11 +34,17 @@ describe("TaskInput", () => {
     const onSubmit = vi.fn();
     render(<TaskInput onSubmit={onSubmit} />);
 
-    const textarea = screen.getByRole("textbox") as HTMLTextAreaElement;
-    fireEvent.change(textarea, { target: { value: "test requirement" } });
-
     const button = screen.getByRole("button", { name: /开始分析/ });
     expect(button).not.toBeDisabled();
+  });
+
+  it("renders with a default requirement pre-filled", () => {
+    const onSubmit = vi.fn();
+    render(<TaskInput onSubmit={onSubmit} />);
+
+    const textarea = screen.getByRole("textbox") as HTMLTextAreaElement;
+    expect(textarea.value.length).toBeGreaterThan(200);
+    expect(textarea.value).toContain("退货");
   });
 
   it("calls onSubmit with requirement text when form is submitted", () => {
