@@ -58,6 +58,68 @@
   margin: 0;
 }
 
+.session-info {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.session-state {
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  border-radius: 4px;
+  text-align: center;
+}
+
+.session-state[data-state="idle"] {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.session-state[data-state="running"] {
+  background: #e3f2fd;
+  color: #1565c0;
+  animation: pulse 2s infinite;
+}
+
+.session-state[data-state="completed"] {
+  background: #f3e5f5;
+  color: #6a1b9a;
+}
+
+.session-state[data-state="failed"] {
+  background: #ffebee;
+  color: #c62828;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+.session-requirement {
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.session-requirement strong {
+  display: block;
+  margin-bottom: 4px;
+  color: #666;
+}
+
+.session-requirement p {
+  margin: 0;
+  color: #333;
+  word-break: break-word;
+  white-space: pre-wrap;
+}
+
 @media (max-width: 1200px) {
   .left-panel {
     width: 25%;
