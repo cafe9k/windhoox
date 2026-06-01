@@ -1,0 +1,39 @@
+.test-case-counter {
+  display: flex;
+  gap: 12px;
+  padding: 12px;
+  background: var(--surface-secondary, #f5f5f5);
+  border-radius: 6px;
+  margin-bottom: 16px;
+}
+
+.counter-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+}
+
+.counter-label {
+  color: var(--text-secondary, #666);
+}
+
+.counter-value {
+  font-weight: 600;
+}
+
+.counter-pending .counter-value {
+  color: var(--warning, #f59e0b);
+}
+
+.counter-accepted .counter-value {
+  color: var(--success, #10b981);
+}
+
+.counter-rejected .counter-value {
+  color: var(--error, #ef4444);
+}
+
+.counter-clarification .counter-value {
+  color: var(--info, #3b82f6);
+}

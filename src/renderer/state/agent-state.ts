@@ -38,6 +38,19 @@ export interface AgentState {
   };
 }
 
+function ensureState(state: AgentState | null, sessionId?: string): AgentState {
+  if (state) return state;
+  return {
+    sessionId: sessionId || "",
+    status: "running",
+    requirement: "",
+    insights: [],
+    questions: [],
+    cases: [],
+    coverage: []
+  };
+}
+
 export function agentStateReducer(state: AgentState | null, event: AgentEvent): AgentState | null {
   switch (event.type) {
     case "run_started": {
@@ -53,11 +66,11 @@ export function agentStateReducer(state: AgentState | null, event: AgentEvent): 
     }
 
     case "requirement_insight": {
-      if (!state) return state;
+      const s = ensureState(state, event.sessionId);
       return {
-        ...state,
+        ...s,
         insights: [
-          ...state.insights,
+          ...s.insights,
           {
             id: `insight-${Date.now()}`,
             businessRule: event.insight.businessRule,
@@ -70,44 +83,54 @@ export function agentStateReducer(state: AgentState | null, event: AgentEvent): 
     }
 
     case "missing_questions": {
-      if (!state) return state;
+      const s = ensureState(state, event.sessionId);
       return {
-        ...state,
+        ...s,
         questions: event.questions
       };
     }
 
     case "case_candidates": {
-      if (!state) return state;
+      const s = ensureState(state, event.sessionId);
       return {
-        ...state,
+        ...s,
         cases: event.cases
       };
     }
 
     case "coverage_matrix": {
-      if (!state) return state;
+      const s = ensureState(state, event.sessionId);
       return {
-        ...state,
+        ...s,
         coverage: event.matrix
       };
     }
 
     case "run_completed": {
-      if (!state) return state;
+      const s = ensureState(state, event.sessionId);
       return {
-        ...state,
+        ...s,
         status: "completed",
         artifacts: event.artifactPaths
       };
     }
 
     case "run_failed": {
+      const s = ensureState(state, event.sessionId);
+      return {
+        ...s,
+        status: "failed",
+        error: event.error
+      };
+    }
+
+    case "case_reviewed": {
       if (!state) return state;
       return {
         ...state,
-        status: "failed",
-        error: event.error
+        cases: state.cases.map((c) =>
+          c.id === event.caseId ? { ...c, status: event.status } : c
+        )
       };
     }
 

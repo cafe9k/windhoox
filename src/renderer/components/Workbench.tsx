@@ -1,7 +1,9 @@
-import React, { useState, useCallback, useReducer } from "react";
+import React, { useState, useCallback, useReducer, useMemo } from "react";
 import { TaskInput } from "./TaskInput";
 import { InsightCard } from "./InsightCard";
 import { TestCaseCard } from "./TestCaseCard";
+import { TestCaseCounter } from "./TestCaseCounter";
+import { ContinueAnalysisButton } from "./ContinueAnalysisButton";
 import { agentStateReducer, type AgentState } from "../state/agent-state";
 import type { AgentEvent } from "../../types/agent";
 import "./Workbench.css";
@@ -18,6 +20,34 @@ export function Workbench() {
   const [session, setSession] = useState<Session | null>(null);
   const [agentState, dispatch] = useReducer(agentStateReducer, null as AgentState | null);
   const agentApi = (window as any).windhoox?.agent;
+
+  // 计算测试用例计数
+  const caseCounts = useMemo(() => {
+    if (!agentState?.cases) {
+      return { pending: 0, accepted: 0, rejected: 0, needsClarification: 0 };
+    }
+
+    const counts = {
+      pending: 0,
+      accepted: 0,
+      rejected: 0,
+      needsClarification: 0
+    };
+
+    agentState.cases.forEach((c) => {
+      if (c.status === "pending") {
+        counts.pending++;
+      } else if (c.status === "accepted") {
+        counts.accepted++;
+      } else if (c.status === "rejected") {
+        counts.rejected++;
+      } else if (c.status === "ask_product" || c.status === "ask_engineering" || c.status === "needs_context") {
+        counts.needsClarification++;
+      }
+    });
+
+    return counts;
+  }, [agentState?.cases]);
 
   const handleStartAnalysis = useCallback(
     async (requirement: string) => {
@@ -88,11 +118,96 @@ export function Workbench() {
           caseId,
           status
         });
+
+        // 更新本地状态
+        dispatch({
+          type: "case_reviewed",
+          caseId,
+          status,
+          timestamp: Date.now()
+        } as any);
       } catch (error) {
         console.error("Failed to review case:", error);
       }
     },
     [session, agentApi]
+  );
+
+  const handleContinueAnalysis = useCallback(
+    async (payload: {
+      sessionId: string;
+      previousSessionId: string;
+      feedback: {
+        acceptedCaseIds: string[];
+        rejectedCaseIds: string[];
+        unresolvedQuestions: Array<{
+          id: string;
+          category: string;
+          text: string;
+        }>;
+      };
+    }) => {
+      if (!agentApi) {
+        console.error("Agent API not available");
+        return;
+      }
+
+      const newSessionId = `session-${Date.now()}`;
+      setSession((prev) =>
+        prev
+          ? {
+              ...prev,
+              id: newSessionId,
+              state: "running"
+            }
+          : null
+      );
+
+      try {
+        const result = await agentApi.continueAnalysis({
+          sessionId: newSessionId,
+          previousSessionId: payload.previousSessionId,
+          feedback: payload.feedback
+        });
+
+        setSession((prev) =>
+          prev
+            ? {
+                ...prev,
+                id: result.sessionId,
+                state: "running"
+              }
+            : null
+        );
+
+        // 监听代理事件
+        agentApi.onEvent((event: AgentEvent) => {
+          dispatch(event);
+
+          // 根据事件更新会话状态
+          if (event.type === "run_completed") {
+            setSession((prev) =>
+              prev ? { ...prev, state: "completed" } : null
+            );
+          } else if (event.type === "run_failed") {
+            setSession((prev) =>
+              prev ? { ...prev, state: "failed" } : null
+            );
+          }
+        });
+      } catch (error) {
+        console.error("Failed to continue analysis:", error);
+        setSession((prev) =>
+          prev
+            ? {
+                ...prev,
+                state: "failed"
+              }
+            : null
+        );
+      }
+    },
+    [agentApi]
   );
 
   return (
@@ -168,15 +283,24 @@ export function Workbench() {
               <p>未生成测试用例</p>
             </div>
           ) : (
-            <div className="cases-section">
-              {agentState.cases.map((testCase) => (
-                <TestCaseCard
-                  key={testCase.id}
-                  testCase={testCase}
-                  onStatusChange={handleCaseStatusChange}
+            <>
+              <TestCaseCounter counts={caseCounts} />
+              {session?.state === "completed" && agentState && (
+                <ContinueAnalysisButton
+                  state={agentState}
+                  onContinue={handleContinueAnalysis}
                 />
-              ))}
-            </div>
+              )}
+              <div className="cases-section">
+                {agentState.cases.map((testCase) => (
+                  <TestCaseCard
+                    key={testCase.id}
+                    testCase={testCase}
+                    onStatusChange={handleCaseStatusChange}
+                  />
+                ))}
+              </div>
+            </>
           )}
         </div>
       </aside>

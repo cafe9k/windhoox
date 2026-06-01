@@ -5,8 +5,16 @@ export interface AnalysisPayload {
 
 export interface ContinueAnalysisPayload {
   sessionId: string;
-  followUpPrompt: string;
-  reviewDecisions?: Record<string, string>;
+  previousSessionId: string;
+  feedback: {
+    acceptedCaseIds: string[];
+    rejectedCaseIds: string[];
+    unresolvedQuestions: Array<{
+      id: string;
+      category: string;
+      text: string;
+    }>;
+  };
 }
 
 export interface ReviewCasePayload {
@@ -29,7 +37,8 @@ export type AgentEvent =
   | CaseCandidatesEvent
   | CoverageMatrixEvent
   | AgentRunCompletedEvent
-  | AgentRunFailedEvent;
+  | AgentRunFailedEvent
+  | CaseReviewedEvent;
 
 export interface AgentRunStartedEvent {
   type: "run_started";
@@ -111,5 +120,13 @@ export interface AgentRunFailedEvent {
   error: string;
   recoverable: boolean;
   retryEligible: boolean;
+  timestamp: number;
+}
+
+export interface CaseReviewedEvent {
+  type: "case_reviewed";
+  sessionId: string;
+  caseId: string;
+  status: "accepted" | "rejected" | "ask_product" | "ask_engineering" | "needs_context";
   timestamp: number;
 }
