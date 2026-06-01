@@ -1,5 +1,9 @@
 import { app, dialog } from "electron";
-import { autoUpdater } from "electron-updater";
+import type { AppUpdater } from "electron-updater";
+import { createRequire } from "node:module";
+
+const require = createRequire(import.meta.url);
+const { autoUpdater } = require("electron-updater") as { autoUpdater: AppUpdater };
 
 let initialized = false;
 

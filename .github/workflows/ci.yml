@@ -10,8 +10,118 @@ permissions:
   contents: read
 
 jobs:
+  changes:
+    name: Detect changed areas
+    runs-on: ubuntu-latest
+    outputs:
+      electron: ${{ steps.filter.outputs.electron }}
+      renderer: ${{ steps.filter.outputs.renderer }}
+      build: ${{ steps.filter.outputs.build }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Filter changed files
+        id: filter
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            base="${{ github.event.pull_request.base.sha }}"
+            head="${{ github.event.pull_request.head.sha }}"
+          else
+            base="${{ github.event.before }}"
+            head="${{ github.sha }}"
+          fi
+
+          if [[ "$base" =~ ^0+$ ]]; then
+            base="$(git rev-list --max-parents=0 "$head")"
+          fi
+
+          git diff --name-only "$base" "$head" > changed-files.txt
+
+          matches() {
+            local pattern="$1"
+            if grep -E "$pattern" changed-files.txt > /dev/null; then
+              echo "true"
+            else
+              echo "false"
+            fi
+          }
+
+          common='^(package\.json|pnpm-lock\.yaml|vitest\.config\.ts|\.github/workflows/ci\.yml)$'
+          renderer='^(src/renderer/|index\.html|vite\.config\.ts|tsconfig\.json)'
+          electron='^(src/main/|src/preload/|electron-builder\.yml|tsconfig\.node\.json)'
+
+          echo "renderer=$(matches "($common|$renderer)")" >> "$GITHUB_OUTPUT"
+          echo "electron=$(matches "($common|$electron)")" >> "$GITHUB_OUTPUT"
+          echo "build=$(matches "($common|$renderer|$electron)")" >> "$GITHUB_OUTPUT"
+
+  renderer-tests:
+    name: Renderer tests
+    needs: changes
+    if: needs.changes.outputs.renderer == 'true'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.33.0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Test renderer
+        run: pnpm test:renderer
+
+  electron-tests:
+    name: Electron tests
+    needs: changes
+    if: needs.changes.outputs.electron == 'true'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.33.0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Test Electron bridge
+        run: pnpm test:electron
+
+      - name: Build Electron main process
+        run: pnpm build:electron
+
   build:
     name: Typecheck and build
+    needs: changes
+    if: needs.changes.outputs.build == 'true'
     runs-on: ubuntu-latest
 
     steps:
