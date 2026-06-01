@@ -130,3 +130,10 @@ export interface CaseReviewedEvent {
   status: "accepted" | "rejected" | "ask_product" | "ask_engineering" | "needs_context";
   timestamp: number;
 }
+
+// Config types
+export interface AppConfig {
+  deepseekApiKey: string;
+  deepseekBaseUrl: string;
+  deepseekModel: string;
+}

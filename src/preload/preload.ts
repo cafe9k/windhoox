@@ -4,6 +4,7 @@ import type {
   ContinueAnalysisPayload,
   ReviewCasePayload,
   LoadSessionPayload,
+  AppConfig,
   AgentEventListener,
   AgentEvent
 } from "../types/agent.js";
@@ -17,6 +18,10 @@ const agentApi = {
     ipcRenderer.invoke("agent:review-case", payload),
   loadSession: (payload: LoadSessionPayload) =>
     ipcRenderer.invoke("agent:load-session", payload),
+  getConfig: () =>
+    ipcRenderer.invoke("agent:get-config"),
+  setConfig: (updates: Partial<AppConfig>) =>
+    ipcRenderer.invoke("agent:set-config", updates),
   onEvent: (listener: AgentEventListener) => {
     const channel = "agent:event";
     const wrappedListener = (_event: any, data: AgentEvent) => listener(data);

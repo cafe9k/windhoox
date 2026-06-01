@@ -4,6 +4,7 @@ import { InsightCard } from "./InsightCard";
 import { TestCaseCard } from "./TestCaseCard";
 import { TestCaseCounter } from "./TestCaseCounter";
 import { ContinueAnalysisButton } from "./ContinueAnalysisButton";
+import { SettingsPanel } from "./SettingsPanel";
 import { agentStateReducer, type AgentState } from "../state/agent-state";
 import type { AgentEvent } from "../../types/agent";
 import { DEMO_EVENTS, DEMO_REQUIREMENT, DEMO_SESSION_ID } from "../demo-data";
@@ -20,6 +21,7 @@ interface Session {
 export function Workbench() {
   const [session, setSession] = useState<Session | null>(null);
   const [agentState, dispatch] = useReducer(agentStateReducer, null as AgentState | null);
+  const [showSettings, setShowSettings] = useState(false);
   const agentApi = (window as any).windhoox?.agent;
 
   // 计算测试用例计数
@@ -226,8 +228,19 @@ export function Workbench() {
 
   return (
     <div className="workbench">
+      {showSettings && <SettingsPanel onClose={() => setShowSettings(false)} />}
+
       <aside className="workbench-panel left-panel">
-        <div className="panel-header">任务与上下文</div>
+        <div className="panel-header">
+          <span>任务与上下文</span>
+          <button
+            className="settings-btn"
+            onClick={() => setShowSettings(true)}
+            title="设置"
+          >
+            ⚙️
+          </button>
+        </div>
         <div className="panel-content">
           {!session ? (
             <TaskInput onSubmit={handleStartAnalysis} onLoadDemo={handleLoadDemo} />

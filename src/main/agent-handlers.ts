@@ -3,9 +3,11 @@ import type {
   AnalysisPayload,
   ContinueAnalysisPayload,
   ReviewCasePayload,
-  LoadSessionPayload
+  LoadSessionPayload,
+  AppConfig,
 } from "../types/agent.js";
 import { runLocalAgent } from "./agent-runner.js";
+import { getConfig, setConfig, getConfigMasked } from "./config.js";
 
 export function registerAgentHandlers(mainWindow: BrowserWindow | null) {
   ipcMain.handle("agent:start-analysis", async (_event, payload: AnalysisPayload) => {
@@ -51,5 +53,14 @@ export function registerAgentHandlers(mainWindow: BrowserWindow | null) {
 
   ipcMain.handle("agent:load-session", async (_event, _payload: LoadSessionPayload) => {
     return { success: true };
+  });
+
+  // Config handlers
+  ipcMain.handle("agent:get-config", async () => {
+    return getConfigMasked();
+  });
+
+  ipcMain.handle("agent:set-config", async (_event, updates: Partial<AppConfig>) => {
+    return setConfig(updates);
   });
 }

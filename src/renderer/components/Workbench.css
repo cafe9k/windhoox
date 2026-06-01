@@ -62,6 +62,29 @@
   opacity: 0.3;
 }
 
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.settings-btn {
+  background: none;
+  border: none;
+  font-size: var(--text-base);
+  cursor: pointer;
+  padding: var(--space-1);
+  border-radius: var(--radius-sm);
+  opacity: 0.6;
+  transition: all var(--transition-base);
+  line-height: 1;
+}
+
+.settings-btn:hover {
+  opacity: 1;
+  background: var(--color-surface);
+}
+
 /* 面板内容区 */
 .panel-content {
   flex: 1;
