@@ -6,6 +6,7 @@ import { TestCaseCounter } from "./TestCaseCounter";
 import { ContinueAnalysisButton } from "./ContinueAnalysisButton";
 import { agentStateReducer, type AgentState } from "../state/agent-state";
 import type { AgentEvent } from "../../types/agent";
+import { DEMO_EVENTS, DEMO_REQUIREMENT, DEMO_SESSION_ID } from "../demo-data";
 import "./Workbench.css";
 
 type SessionState = "idle" | "running" | "completed" | "failed";
@@ -107,6 +108,19 @@ export function Workbench() {
     },
     [agentApi]
   );
+
+  const handleLoadDemo = useCallback(() => {
+    setSession({
+      id: DEMO_SESSION_ID,
+      state: "completed",
+      requirement: DEMO_REQUIREMENT,
+    });
+
+    // Dispatch all demo events sequentially
+    DEMO_EVENTS.forEach((event) => {
+      dispatch(event);
+    });
+  }, []);
 
   const handleCaseStatusChange = useCallback(
     async (caseId: string, status: AgentState["cases"][0]["status"]) => {
@@ -216,7 +230,7 @@ export function Workbench() {
         <div className="panel-header">任务与上下文</div>
         <div className="panel-content">
           {!session ? (
-            <TaskInput onSubmit={handleStartAnalysis} />
+            <TaskInput onSubmit={handleStartAnalysis} onLoadDemo={handleLoadDemo} />
           ) : (
             <div className="session-info">
               <div className="session-state" data-state={session.state}>

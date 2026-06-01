@@ -3,10 +3,11 @@ import "./TaskInput.css";
 
 interface TaskInputProps {
   onSubmit: (requirement: string) => void;
+  onLoadDemo?: () => void;
   isLoading?: boolean;
 }
 
-export function TaskInput({ onSubmit, isLoading = false }: TaskInputProps) {
+export function TaskInput({ onSubmit, onLoadDemo, isLoading = false }: TaskInputProps) {
   const [requirement, setRequirement] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -42,6 +43,19 @@ export function TaskInput({ onSubmit, isLoading = false }: TaskInputProps) {
           {isLoading ? "分析中..." : "开始分析"}
         </button>
       </div>
+
+      {onLoadDemo && (
+        <div className="demo-hint">
+          <button
+            type="button"
+            className="demo-link"
+            onClick={onLoadDemo}
+            disabled={isLoading}
+          >
+            加载演示任务 — 查看完整分析流程
+          </button>
+        </div>
+      )}
     </form>
   );
 }
