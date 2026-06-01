@@ -2,6 +2,15 @@ import React, { useState, useEffect } from "react";
 import type { AppConfig } from "../../types/agent";
 import "./SettingsPanel.css";
 
+interface ConfigSource {
+  key: string;
+  label: string;
+}
+
+interface ConfigWithSources extends AppConfig {
+  _sources: Record<string, ConfigSource>;
+}
+
 interface SettingsPanelProps {
   onClose: () => void;
 }
@@ -13,15 +22,18 @@ export function SettingsPanel({ onClose }: SettingsPanelProps) {
   const [showKey, setShowKey] = useState(false);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
+  const [apiKeySource, setApiKeySource] = useState<ConfigSource | null>(null);
   const agentApi = (window as any).windhoox?.agent;
 
+  const isEnvKey = apiKeySource?.key === "env";
+
   useEffect(() => {
-    // Load current config
     if (agentApi?.getConfig) {
-      agentApi.getConfig().then((config: AppConfig) => {
+      agentApi.getConfig().then((config: ConfigWithSources) => {
         setApiKey(config.deepseekApiKey || "");
         setBaseUrl(config.deepseekBaseUrl || "https://api.deepseek.com");
         setModel(config.deepseekModel || "deepseek-reasoner");
+        setApiKeySource(config._sources?.deepseekApiKey || null);
       }).catch(() => {
         // Silently fail — will use defaults
       });
@@ -34,15 +46,20 @@ export function SettingsPanel({ onClose }: SettingsPanelProps) {
       return;
     }
 
+    // If API key is from env, don't save it (it's read-only)
+    const updates: Partial<AppConfig> = {
+      deepseekBaseUrl: baseUrl,
+      deepseekModel: model,
+    };
+    if (!isEnvKey) {
+      updates.deepseekApiKey = apiKey;
+    }
+
     setSaving(true);
     setMessage("");
 
     try {
-      await agentApi.setConfig({
-        deepseekApiKey: apiKey,
-        deepseekBaseUrl: baseUrl,
-        deepseekModel: model,
-      });
+      await agentApi.setConfig(updates);
       setMessage("✅ 设置已保存");
       setTimeout(() => setMessage(""), 2000);
     } catch (error) {
@@ -67,15 +84,25 @@ export function SettingsPanel({ onClose }: SettingsPanelProps) {
             <h4>DeepSeek API 配置</h4>
 
             <div className="settings-field">
-              <label htmlFor="api-key">API Key</label>
+              <div className="settings-label-row">
+                <label htmlFor="api-key">API Key</label>
+                {apiKeySource && (
+                  <span className={`settings-source source-${apiKeySource.key}`}>
+                    {apiKeySource.label}
+                  </span>
+                )}
+              </div>
               <div className="settings-input-row">
                 <input
                   id="api-key"
                   type={showKey ? "text" : "password"}
                   value={apiKey}
-                  onChange={(e) => setApiKey(e.target.value)}
+                  onChange={(e) => {
+                    if (!isEnvKey) setApiKey(e.target.value);
+                  }}
                   placeholder="sk-xxxxxxxxxxxxxxxxxxxxxxxx"
-                  className="settings-input"
+                  className={`settings-input ${isEnvKey ? "input-readonly" : ""}`}
+                  readOnly={isEnvKey}
                 />
                 <button
                   type="button"
@@ -86,11 +113,18 @@ export function SettingsPanel({ onClose }: SettingsPanelProps) {
                   {showKey ? "🙈" : "👁️"}
                 </button>
               </div>
-              <p className="settings-hint">
-                从 <a href="https://platform.deepseek.com/api_keys" target="_blank" rel="noopener">
-                  DeepSeek 控制台
-                </a> 获取 API Key。开发环境下也可写入 .env.local 文件。
-              </p>
+              {isEnvKey ? (
+                <p className="settings-hint hint-env">
+                  API Key 来自 <code>.env.local</code> 环境变量，不可在 UI 中修改。
+                  如需修改，请编辑项目根目录下的 <code>.env.local</code> 文件后重启应用。
+                </p>
+              ) : (
+                <p className="settings-hint">
+                  从 <a href="https://platform.deepseek.com/api_keys" target="_blank" rel="noopener">
+                    DeepSeek 控制台
+                  </a> 获取 API Key。
+                </p>
+              )}
             </div>
 
             <div className="settings-field">

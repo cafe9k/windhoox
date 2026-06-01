@@ -15,6 +15,15 @@ export interface AppConfig {
   deepseekModel: string;
 }
 
+export interface ConfigSource {
+  key: "env" | "disk" | "default";
+  label: string;
+}
+
+export type ConfigWithSources = AppConfig & {
+  _sources: Record<keyof AppConfig, ConfigSource>;
+};
+
 const DEFAULT_CONFIG: AppConfig = {
   deepseekApiKey: "",
   deepseekBaseUrl: "https://api.deepseek.com",
@@ -22,6 +31,7 @@ const DEFAULT_CONFIG: AppConfig = {
 };
 
 let _config: AppConfig | null = null;
+let _sources: Record<keyof AppConfig, ConfigSource> | null = null;
 let _configDir = "";
 let _configPath = "";
 
@@ -97,6 +107,18 @@ function saveToDisk(config: AppConfig): void {
   }
 }
 
+function buildSources(fromDisk: AppConfig, fromEnv: Partial<AppConfig>): Record<keyof AppConfig, ConfigSource> {
+  const envSource: ConfigSource = { key: "env", label: ".env.local" };
+  const diskSource: ConfigSource = { key: "disk", label: "已保存" };
+  const defaultSource: ConfigSource = { key: "default", label: "默认值" };
+
+  return {
+    deepseekApiKey: fromEnv.deepseekApiKey ? envSource : (fromDisk.deepseekApiKey ? diskSource : defaultSource),
+    deepseekBaseUrl: fromEnv.deepseekBaseUrl ? envSource : (fromDisk.deepseekBaseUrl ? diskSource : defaultSource),
+    deepseekModel: fromEnv.deepseekModel ? envSource : (fromDisk.deepseekModel ? diskSource : defaultSource),
+  };
+}
+
 /**
  * Get current app config.
  * Priority: .env.local (dev) > persisted config > defaults
@@ -114,7 +136,20 @@ export function getConfig(): AppConfig {
     ...fromEnv,
   };
 
+  _sources = buildSources(fromDisk, fromEnv);
+
   return _config;
+}
+
+/**
+ * Get config with source tracking for each field.
+ */
+export function getConfigWithSources(): ConfigWithSources {
+  const config = getConfig();
+  return {
+    ...config,
+    _sources: _sources || buildSources(loadFromDisk(), loadEnvLocal()),
+  };
 }
 
 /**
@@ -125,14 +160,18 @@ export function setConfig(updates: Partial<AppConfig>): AppConfig {
   const current = getConfig();
   _config = { ...current, ...updates };
   saveToDisk(_config);
-  return _config;
+  // Reset sources so next load recalculates
+  _sources = null;
+  _config = null;
+  return getConfig();
 }
 
 /**
  * Get config with API key masked (for UI display).
+ * Includes source information.
  */
-export function getConfigMasked(): Omit<AppConfig, "deepseekApiKey"> & { deepseekApiKey: string } {
-  const config = getConfig();
+export function getConfigMasked(): Omit<ConfigWithSources, "deepseekApiKey"> & { deepseekApiKey: string } {
+  const config = getConfigWithSources();
   const key = config.deepseekApiKey;
   const masked = key ? `${key.slice(0, 4)}****${key.slice(-4)}` : "";
   return { ...config, deepseekApiKey: masked };
