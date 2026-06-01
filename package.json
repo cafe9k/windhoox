@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "description": "Windhoox desktop app",
   "private": true,
+  "author": "Windhoox",
   "type": "module",
   "main": "dist-electron/main/main.js",
   "packageManager": "pnpm@10.33.0",
@@ -11,6 +12,9 @@
     "build": "pnpm build:renderer && pnpm build:electron",
     "build:renderer": "tsc -p tsconfig.json --noEmit && vite build",
     "build:electron": "tsc -p tsconfig.node.json",
+    "dist": "pnpm build && electron-builder",
+    "dist:mac": "pnpm build && electron-builder --mac dmg --publish never",
+    "dist:win": "pnpm build && electron-builder --win nsis --publish never",
     "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.node.json --noEmit"
   },
   "dependencies": {
@@ -25,6 +29,7 @@
     "concurrently": "latest",
     "cross-env": "latest",
     "electron": "latest",
+    "electron-builder": "latest",
     "typescript": "latest",
     "vite": "latest",
     "wait-on": "latest"
