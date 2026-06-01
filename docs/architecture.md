@@ -552,22 +552,103 @@ import { MyComponent } from "./MyComponent";
 
 ---
 
-## 8. 已知限制与路线图
+## 8. 项目实施进度表
 
-### 8.1 当前限制
+> 本表列出项目的全部功能模块及其实现状态。`✅` 表示已实现并通过测试，`🔄` 表示部分实现（Stub 或 MVP），`⬜` 表示尚未开始。
 
-| 限制 | 影响 | 优先级 |
-|------|------|--------|
-| `agent-runner.ts` 是 Stub | 无真实 AI 分析能力 | 🔴 高 |
-| `missing_questions` 未渲染 | 用户看不到需求缺口 | 🟡 中 |
-| `coverage_matrix` 未渲染 | 覆盖分析不可见 | 🟡 中 |
-| 会话无法持久化 | 关闭应用后数据丢失 | 🟡 中 |
-| `continue-analysis` / `review-case` / `load-session` 是 Stub | 迭代流程不完整 | 🟡 中 |
+### 8.1 基础设施
 
-### 8.2 扩展方向
+| 模块 | 状态 | 说明 | 相关文件 |
+|------|------|------|---------|
+| Electron 应用框架 | ✅ | 主进程 + 预加载脚本 + 渲染进程，窗口管理 | `src/main/main.ts` |
+| Vite 构建系统 | ✅ | 渲染器 HMR + Electron 主进程编译 | `vite.config.ts`, `tsconfig.node.json` |
+| TypeScript 类型检查 | ✅ | 全项目严格类型，渲染器 + 主进程双重检查 | `tsconfig.json`, `tsconfig.node.json` |
+| 单元测试 | ✅ | Vitest + @testing-library/react，50 个测试全部通过 | `vitest.config.ts`, `*.test.ts` |
+| CI/CD | ✅ | GitHub Actions：变更检测、渲染器测试、Electron 测试、构建 | `.github/workflows/ci.yml` |
+| 自动更新 | ✅ | electron-updater，GitHub Releases 渠道 | `src/main/updater.ts` |
+| 中文文档同步 | ✅ | CLAUDE.zh.md / AGENTS.zh.md + 自动同步脚本 + CI | `scripts/sync-docs.ts`, `.github/workflows/sync-docs.yml` |
 
+### 8.2 核心架构
+
+| 模块 | 状态 | 说明 | 相关文件 |
+|------|------|------|---------|
+| 3-Process 安全模型 | ✅ | contextIsolation + contextBridge + sandbox 配置 | `src/main/main.ts`, `src/preload/preload.ts` |
+| IPC 通道注册 | ✅ | 4 个通道已注册：start/continue/review/load | `src/main/agent-handlers.ts` |
+| IPC 桥接 API | ✅ | window.windhoox.agent 暴露 typed 方法 | `src/preload/preload.ts` |
+| Agent 事件协议 | ✅ | 9 种事件类型定义 + AgentEvent 联合类型 | `src/types/agent.ts` |
+| 事件状态机 | ✅ | Redux-style reducer，覆盖全部事件类型 | `src/renderer/state/agent-state.ts` |
+| 事件流推送 | ✅ | Main → Renderer 单向事件流 | `src/main/agent-handlers.ts` |
+
+### 8.3 UI 组件
+
+| 组件 | 状态 | 说明 | 相关文件 |
+|------|------|------|---------|
+| Workbench 三栏布局 | ✅ | 左(任务) / 中(分析) / 右(用例) | `src/renderer/components/Workbench.tsx` |
+| TaskInput 需求输入 | ✅ | 文本输入 + 提交 + 演示模式入口 | `src/renderer/components/TaskInput.tsx` |
+| InsightCard 分析见解 | ✅ | 业务规则/风险/证据/信心度展示 | `src/renderer/components/InsightCard.tsx` |
+| TestCaseCard 测试用例 | ✅ | 可展开卡片 + 接受/拒绝/澄清操作 | `src/renderer/components/TestCaseCard.tsx` |
+| TestCaseCounter 计数器 | ✅ | 待审核/已接受/已拒绝/需澄清统计 | `src/renderer/components/TestCaseCounter.tsx` |
+| ContinueAnalysisButton 继续分析 | ✅ | 收集反馈并发起新一轮分析 | `src/renderer/components/ContinueAnalysisButton.tsx` |
+| 问题澄清 UI | ⬜ | questions 数组未在 Workbench 中渲染 | — |
+| 覆盖矩阵可视化 | ⬜ | coverage 数组未在 Workbench 中渲染 | — |
+| 会话管理列表 | ⬜ | 无历史会话列表 UI | — |
+| 文件上下文选择器 | ⬜ | TaskInput 无法选择本地代码文件 | — |
+| 错误恢复 UI | ⬜ | run_failed 后无重试按钮 | — |
+
+### 8.4 Agent 智能能力
+
+| 模块 | 状态 | 说明 | 相关文件 |
+|------|------|------|---------|
+| 需求分析触发 | ✅ | IPC 完整链路打通 | `src/main/agent-handlers.ts` |
+| 流式事件生成 | ✅ | 事件数组逐条回推至渲染进程 | `src/main/agent-handlers.ts` |
+| 真实 AI 分析 | ⬜ | agent-runner.ts 为 Stub，无 LLM 接入 | `src/main/agent-runner.ts` |
+| 上下文文件读取 | ⬜ | 未实现本地代码文件的读取和解析 | — |
+| 迭代分析（continue）| 🔄 | IPC 通道存在，处理器返回占位 | `src/main/agent-handlers.ts:44` |
+| 用例评审（review）| 🔄 | IPC 通道存在，处理器返回占位 | `src/main/agent-handlers.ts:48` |
+| 会话加载（load）| 🔄 | IPC 通道存在，处理器返回占位 | `src/main/agent-handlers.ts:52` |
+
+### 8.5 数据持久化
+
+| 模块 | 状态 | 说明 | 相关文件 |
+|------|------|------|---------|
+| 产物路径定义 | ✅ | run_completed 返回 artifactPaths | `src/types/agent.ts` |
+| 会话文件存储 | ⬜ | 未实现 sessions/{sessionId}/ 目录读写 | — |
+| 产物文件生成 | ⬜ | runLocalAgent 返回路径但从不创建文件 | `src/main/agent-runner.ts` |
+| 历史会话加载 | ⬜ | load-session 处理器为 Stub | `src/main/agent-handlers.ts:52` |
+
+### 8.6 演示与辅助
+
+| 模块 | 状态 | 说明 | 相关文件 |
+|------|------|------|---------|
+| 演示数据模块 | ✅ | 完整电商支付场景：4 见解 + 3 问题 + 9 用例 + 覆盖矩阵 | `src/renderer/demo-data.ts` |
+| 演示模式入口 | ✅ | TaskInput 中的「加载演示任务」按钮 | `src/renderer/components/TaskInput.tsx` |
+| 架构文档 | ✅ | 系统架构 + 核心流程 + 数据模型 + 开发指南 | `docs/architecture.md` |
+
+### 8.7 进度汇总
+
+| 类别 | 已实现 | 部分实现 | 未实现 | 完成率 |
+|------|--------|---------|--------|--------|
+| 基础设施 | 7 | 0 | 0 | 100% |
+| 核心架构 | 6 | 0 | 0 | 100% |
+| UI 组件 | 6 | 0 | 5 | 55% |
+| Agent 能力 | 2 | 3 | 2 | 29% |
+| 数据持久化 | 1 | 0 | 3 | 25% |
+| 演示与辅助 | 3 | 0 | 0 | 100% |
+| **总计** | **25** | **3** | **10** | **66%** |
+
+### 8.8 路线图
+
+#### 第一阶段：补齐 Stub（优先级 🔴）
 1. **真实 Agent 接入**：替换 `agent-runner.ts` 中的 Stub，接入本地 LLM（如 Ollama）或云端 API
 2. **会话持久化**：实现 `sessions/{sessionId}/` 目录读写，支持加载历史会话
-3. **问题澄清 UI**：在 Workbench 中渲染 `questions` 数组，允许用户在线回答
-4. **覆盖矩阵可视化**：用矩阵表格展示需求 ↔ 用例的覆盖关系
-5. **文件上下文选择器**：允许用户在 TaskInput 中选择本地代码文件作为分析上下文
+3. **迭代分析完整实现**：实现 `continue-analysis` 处理器的真实逻辑
+
+#### 第二阶段：补齐 UI（优先级 🟡）
+4. **问题澄清 UI**：在 Workbench 中渲染 `questions` 数组，允许用户在线回答
+5. **覆盖矩阵可视化**：用矩阵表格展示需求 ↔ 用例的覆盖关系
+6. **错误恢复 UI**：`run_failed` 后显示重试按钮和详细错误信息
+
+#### 第三阶段：增强体验（优先级 🟢）
+7. **文件上下文选择器**：允许用户在 TaskInput 中选择本地代码文件作为分析上下文
+8. **会话管理列表**：历史会话列表，支持删除、重命名、搜索
+9. **产物导出**：支持将分析结果导出为 PDF / Markdown / JSON
