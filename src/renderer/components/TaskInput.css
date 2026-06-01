@@ -58,25 +58,48 @@
 .start-button {
   padding: var(--space-3) var(--space-5);
   font-size: var(--text-base);
-  font-weight: 500;
+  font-weight: 600;
   color: var(--color-surface);
-  background: var(--color-accent);
+  background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-accent-hover) 100%);
   border: none;
   border-radius: var(--radius-md);
   cursor: pointer;
-  transition: background-color var(--transition-base), transform var(--transition-fast);
-  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-base);
+  box-shadow: var(--shadow-md);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  position: relative;
+  overflow: hidden;
+}
+
+.start-button::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  transform: translate(-50%, -50%);
+  transition: width var(--transition-slow), height var(--transition-slow);
 }
 
 .start-button:hover:not(:disabled) {
-  background: var(--color-accent-hover);
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-md);
+  background: linear-gradient(135deg, var(--color-accent-hover) 0%, var(--color-accent-active) 100%);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.start-button:hover:not(:disabled)::before {
+  width: 300px;
+  height: 300px;
 }
 
 .start-button:active:not(:disabled) {
   background: var(--color-accent-active);
   transform: translateY(0);
+  box-shadow: var(--shadow-sm);
 }
 
 .start-button:disabled {

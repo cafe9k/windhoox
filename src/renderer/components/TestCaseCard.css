@@ -4,27 +4,30 @@
   margin-bottom: var(--space-3);
   background: var(--color-surface);
   overflow: hidden;
-  transition: box-shadow var(--transition-base);
+  transition: all var(--transition-base);
+  box-shadow: var(--shadow-sm);
 }
 
 .test-case-card:hover {
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
+  border-color: var(--color-border-strong);
 }
 
 .case-header {
   padding: var(--space-3);
-  background: var(--color-surface-muted);
+  background: linear-gradient(to bottom, var(--color-surface-muted), var(--color-surface));
   border-bottom: 1px solid var(--color-border);
   display: flex;
   justify-content: space-between;
   align-items: center;
   cursor: pointer;
   user-select: none;
-  transition: background-color var(--transition-fast);
+  transition: all var(--transition-fast);
 }
 
 .case-header:hover {
-  background: var(--color-border);
+  background: var(--color-surface-muted);
 }
 
 .case-title-section {
@@ -139,18 +142,21 @@
   border: none;
   border-radius: var(--radius-sm);
   cursor: pointer;
-  transition: opacity var(--transition-fast), transform var(--transition-fast);
+  transition: all var(--transition-fast);
   box-shadow: var(--shadow-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
 }
 
 .action-btn:hover {
-  opacity: 0.9;
-  transform: translateY(-1px);
+  opacity: 0.95;
+  transform: translateY(-2px);
   box-shadow: var(--shadow-md);
 }
 
 .action-btn:active {
   transform: translateY(0);
+  box-shadow: var(--shadow-sm);
 }
 
 .accept-btn {
