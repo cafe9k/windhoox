@@ -11,11 +11,11 @@ describe("App", () => {
     };
   });
 
-  it("renders the Windhoox hello world screen", () => {
+  it("renders the workbench layout", () => {
     render(<App />);
 
-    expect(screen.getByRole("heading", { name: "Hello, Windhoox" })).toBeInTheDocument();
-    expect(screen.getByText("Electron + Vite + React + TypeScript")).toBeInTheDocument();
-    expect(screen.getByText("Running on darwin")).toBeInTheDocument();
+    expect(screen.getByText("Task & Context")).toBeInTheDocument();
+    expect(screen.getByText("Agent Analysis")).toBeInTheDocument();
+    expect(screen.getByText("Test Asset Pool")).toBeInTheDocument();
   });
 });
