@@ -1,6 +1,7 @@
 import { useState } from "react";
+import { Card, Button, Input, Space, Row, Col, Statistic } from "antd";
+import { ReloadOutlined, CloseOutlined } from "@ant-design/icons";
 import type { AgentState } from "../state/agent-state";
-import "./ContinueAnalysisButton.css";
 
 interface ContinueAnalysisButtonProps {
   state: AgentState;
@@ -63,30 +64,39 @@ export function ContinueAnalysisButton({ state, onContinue }: ContinueAnalysisBu
   };
 
   return (
-    <div className="continue-analysis-section">
-      <div className="continue-summary">
-        <div className="summary-item">
-          <span className="summary-label">已审核:</span>
-          <span className="summary-value">{reviewedCount} 个测试用例</span>
-        </div>
-        <div className="summary-item">
-          <span className="summary-label">待澄清:</span>
-          <span className="summary-value">{unresolvedQuestions.length} 个问题</span>
-        </div>
-      </div>
+    <Card size="small" style={{ marginBottom: 16 }}>
+      <Row gutter={16} style={{ marginBottom: 12 }}>
+        <Col span={12}>
+          <Statistic
+            data-testid="summary-reviewed"
+            title="已审核"
+            value={`${reviewedCount} 个测试用例`}
+            valueStyle={{ fontSize: 14 }}
+          />
+        </Col>
+        <Col span={12}>
+          <Statistic
+            data-testid="summary-questions"
+            title="待澄清"
+            value={`${unresolvedQuestions.length} 个问题`}
+            valueStyle={{ fontSize: 14 }}
+          />
+        </Col>
+      </Row>
 
       {showPromptInput ? (
-        <div className="follow-up-input">
-          <textarea
-            className="prompt-textarea"
+        <Space direction="vertical" style={{ width: "100%" }}>
+          <Input.TextArea
+            data-testid="prompt-textarea"
             placeholder="添加额外的说明或问题（可选）..."
             value={followUpPrompt}
             onChange={(e) => setFollowUpPrompt(e.target.value)}
             rows={3}
           />
-          <div className="button-group">
-            <button
-              className="cancel-button"
+          <Space style={{ width: "100%", justifyContent: "flex-end" }}>
+            <Button
+              data-testid="cancel-button"
+              icon={<CloseOutlined />}
               onClick={() => {
                 setShowPromptInput(false);
                 setFollowUpPrompt("");
@@ -94,25 +104,31 @@ export function ContinueAnalysisButton({ state, onContinue }: ContinueAnalysisBu
               disabled={isLoading}
             >
               取消
-            </button>
-            <button
-              className="continue-button"
+            </Button>
+            <Button
+              data-testid="continue-button"
+              type="primary"
+              icon={<ReloadOutlined />}
               onClick={handleClick}
               disabled={isLoading || !hasCases}
+              loading={isLoading}
             >
               {isLoading ? "分析中..." : "继续分析"}
-            </button>
-          </div>
-        </div>
+            </Button>
+          </Space>
+        </Space>
       ) : (
-        <button
-          className="continue-button"
+        <Button
+          data-testid="continue-button"
+          type="primary"
+          icon={<ReloadOutlined />}
           onClick={() => setShowPromptInput(true)}
           disabled={isLoading || !hasCases}
+          block
         >
           {isLoading ? "分析中..." : "继续分析"}
-        </button>
+        </Button>
       )}
-    </div>
+    </Card>
   );
 }

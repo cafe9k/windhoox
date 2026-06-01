@@ -1,4 +1,10 @@
-import "./TestCaseCounter.css";
+import { Row, Col, Statistic } from "antd";
+import {
+  ClockCircleOutlined,
+  CheckCircleOutlined,
+  CloseCircleOutlined,
+  QuestionCircleOutlined,
+} from "@ant-design/icons";
 
 interface TestCaseCounterProps {
   counts: {
@@ -11,23 +17,43 @@ interface TestCaseCounterProps {
 
 export function TestCaseCounter({ counts }: TestCaseCounterProps) {
   return (
-    <div className="test-case-counter">
-      <div className="counter-item counter-pending">
-        <span className="counter-label">待审核:</span>
-        <span className="counter-value">{counts.pending}</span>
-      </div>
-      <div className="counter-item counter-accepted">
-        <span className="counter-label">已接受:</span>
-        <span className="counter-value">{counts.accepted}</span>
-      </div>
-      <div className="counter-item counter-rejected">
-        <span className="counter-label">已拒绝:</span>
-        <span className="counter-value">{counts.rejected}</span>
-      </div>
-      <div className="counter-item counter-clarification">
-        <span className="counter-label">需要澄清:</span>
-        <span className="counter-value">{counts.needsClarification}</span>
-      </div>
-    </div>
+    <Row gutter={8} style={{ marginBottom: 16 }}>
+      <Col span={6}>
+        <Statistic
+          data-testid="counter-pending"
+          title="待审核"
+          value={counts.pending}
+          valueStyle={{ color: "#faad14", fontSize: 18 }}
+          prefix={<ClockCircleOutlined />}
+        />
+      </Col>
+      <Col span={6}>
+        <Statistic
+          data-testid="counter-accepted"
+          title="已接受"
+          value={counts.accepted}
+          valueStyle={{ color: "#52c41a", fontSize: 18 }}
+          prefix={<CheckCircleOutlined />}
+        />
+      </Col>
+      <Col span={6}>
+        <Statistic
+          data-testid="counter-rejected"
+          title="已拒绝"
+          value={counts.rejected}
+          valueStyle={{ color: "#ff4d4f", fontSize: 18 }}
+          prefix={<CloseCircleOutlined />}
+        />
+      </Col>
+      <Col span={6}>
+        <Statistic
+          data-testid="counter-clarification"
+          title="需要澄清"
+          value={counts.needsClarification}
+          valueStyle={{ color: "#1890ff", fontSize: 18 }}
+          prefix={<QuestionCircleOutlined />}
+        />
+      </Col>
+    </Row>
   );
 }

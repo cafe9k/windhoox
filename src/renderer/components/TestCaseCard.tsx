@@ -1,5 +1,12 @@
-import React, { useState } from "react";
-import "./TestCaseCard.css";
+import { useState } from "react";
+import { Card, Tag, Button, Space, Typography, Divider } from "antd";
+import {
+  CheckCircleOutlined,
+  CloseCircleOutlined,
+  QuestionCircleOutlined,
+  CaretRightOutlined,
+  CaretDownOutlined,
+} from "@ant-design/icons";
 
 interface TestCase {
   id: string;
@@ -16,43 +23,66 @@ interface TestCaseCardProps {
   onStatusChange: (caseId: string, status: TestCase["status"]) => void;
 }
 
-const statusLabel = {
-  pending: "待审核",
-  accepted: "已接受",
-  rejected: "已拒绝",
-  ask_product: "询问产品",
-  ask_engineering: "询问工程",
-  needs_context: "需要上下文"
+const statusConfig: Record<TestCase["status"], { label: string; color: string }> = {
+  pending: { label: "待审核", color: "default" },
+  accepted: { label: "已接受", color: "success" },
+  rejected: { label: "已拒绝", color: "error" },
+  ask_product: { label: "询问产品", color: "warning" },
+  ask_engineering: { label: "询问工程", color: "warning" },
+  needs_context: { label: "需要上下文", color: "processing" },
 };
 
 export function TestCaseCard({ testCase, onStatusChange }: TestCaseCardProps) {
   const [expanded, setExpanded] = useState(false);
-
-  const statusClass = testCase.status.replace(/_/g, "-");
+  const config = statusConfig[testCase.status];
 
   return (
-    <div className={`test-case-card test-case-${statusClass}`}>
-      <div className="case-header" onClick={() => setExpanded(!expanded)}>
-        <div className="case-title-section">
-          <strong className="case-title">{testCase.title}</strong>
-          <span className={`case-status case-status-${statusClass}`}>
-            {statusLabel[testCase.status]}
-          </span>
-        </div>
-        <span className="expand-icon">{expanded ? "−" : "+"}</span>
+    <Card
+      data-testid="test-case-card"
+      size="small"
+      style={{ marginBottom: 8 }}
+      styles={{ body: { padding: 0 } }}
+    >
+      <div
+        data-testid="case-header"
+        onClick={() => setExpanded(!expanded)}
+        style={{
+          padding: "10px 12px",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          cursor: "pointer",
+          userSelect: "none",
+        }}
+      >
+        <Space>
+          <Typography.Text strong style={{ fontSize: 13 }}>
+            {testCase.title}
+          </Typography.Text>
+          <Tag color={config.color}>{config.label}</Tag>
+        </Space>
+        {expanded ? <CaretDownOutlined /> : <CaretRightOutlined />}
       </div>
 
       {expanded && (
-        <div className="case-content">
-          <div className="case-section">
-            <strong>描述:</strong>
-            <p>{testCase.description}</p>
+        <div style={{ padding: "0 12px 12px" }}>
+          <Divider style={{ margin: "8px 0" }} />
+
+          <div style={{ marginBottom: 12 }}>
+            <Typography.Text type="secondary" style={{ fontSize: 12, fontWeight: 600 }}>
+              描述
+            </Typography.Text>
+            <Typography.Paragraph style={{ margin: "4px 0 0", fontSize: 13 }}>
+              {testCase.description}
+            </Typography.Paragraph>
           </div>
 
           {testCase.preconditions.length > 0 && (
-            <div className="case-section">
-              <strong>前置条件:</strong>
-              <ul>
+            <div style={{ marginBottom: 12 }}>
+              <Typography.Text type="secondary" style={{ fontSize: 12, fontWeight: 600 }}>
+                前置条件
+              </Typography.Text>
+              <ul style={{ margin: "4px 0 0", paddingLeft: 20, fontSize: 13 }}>
                 {testCase.preconditions.map((pc, i) => (
                   <li key={i}>{pc}</li>
                 ))}
@@ -61,9 +91,11 @@ export function TestCaseCard({ testCase, onStatusChange }: TestCaseCardProps) {
           )}
 
           {testCase.steps.length > 0 && (
-            <div className="case-section">
-              <strong>步骤:</strong>
-              <ol>
+            <div style={{ marginBottom: 12 }}>
+              <Typography.Text type="secondary" style={{ fontSize: 12, fontWeight: 600 }}>
+                步骤
+              </Typography.Text>
+              <ol style={{ margin: "4px 0 0", paddingLeft: 20, fontSize: 13 }}>
                 {testCase.steps.map((step, i) => (
                   <li key={i}>{step}</li>
                 ))}
@@ -71,33 +103,45 @@ export function TestCaseCard({ testCase, onStatusChange }: TestCaseCardProps) {
             </div>
           )}
 
-          <div className="case-section">
-            <strong>预期结果:</strong>
-            <p>{testCase.expectedResult}</p>
+          <div style={{ marginBottom: 12 }}>
+            <Typography.Text type="secondary" style={{ fontSize: 12, fontWeight: 600 }}>
+              预期结果
+            </Typography.Text>
+            <Typography.Paragraph style={{ margin: "4px 0 0", fontSize: 13 }}>
+              {testCase.expectedResult}
+            </Typography.Paragraph>
           </div>
 
-          <div className="case-actions">
-            <button
-              className="action-btn accept-btn"
+          <Space style={{ width: "100%" }}>
+            <Button
+              data-testid="accept-btn"
+              type="primary"
+              icon={<CheckCircleOutlined />}
               onClick={() => onStatusChange(testCase.id, "accepted")}
+              size="small"
             >
               接受
-            </button>
-            <button
-              className="action-btn reject-btn"
+            </Button>
+            <Button
+              data-testid="reject-btn"
+              danger
+              icon={<CloseCircleOutlined />}
               onClick={() => onStatusChange(testCase.id, "rejected")}
+              size="small"
             >
               拒绝
-            </button>
-            <button
-              className="action-btn clarify-btn"
+            </Button>
+            <Button
+              data-testid="clarify-btn"
+              icon={<QuestionCircleOutlined />}
               onClick={() => onStatusChange(testCase.id, "ask_product")}
+              size="small"
             >
               澄清
-            </button>
-          </div>
+            </Button>
+          </Space>
         </div>
       )}
-    </div>
+    </Card>
   );
 }

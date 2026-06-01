@@ -1,7 +1,7 @@
 <!-- gitnexus:start -->
 # GitNexus — 代码智能
 
-本项目已被 GitNexus 索引为 **windhoox**（371 个符号，504 条关系，14 条执行流）。使用 GitNexus MCP 工具来理解代码、评估影响和安全的导航。
+本项目已被 GitNexus 索引为 **windhoox**（393 个符号，531 条关系，14 条执行流）。使用 GitNexus MCP 工具来理解代码、评估影响和安全的导航。
 
 > 如果任何 GitNexus 工具提示索引已过期，先在终端中运行 `npx gitnexus analyze`。
 

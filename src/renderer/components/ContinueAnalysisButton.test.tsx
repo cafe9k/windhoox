@@ -1,6 +1,6 @@
 import "@testing-library/jest-dom/vitest";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { render, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { ContinueAnalysisButton } from "./ContinueAnalysisButton";
 import type { AgentState } from "../state/agent-state";
 
@@ -10,19 +10,20 @@ describe("ContinueAnalysisButton", () => {
   const mockState: AgentState = {
     sessionId: "test-session-123",
     requirement: "Test requirement",
+    status: "completed",
     insights: [
       {
         id: "insight-1",
         businessRule: "Test rule",
-        confidence: "high"
-      }
+        confidence: "high",
+      },
     ],
     questions: [
       {
         id: "question-1",
-        category: "clarification",
-        question: "Test question"
-      }
+        category: "qa",
+        question: "Test question",
+      },
     ],
     cases: [
       {
@@ -32,7 +33,7 @@ describe("ContinueAnalysisButton", () => {
         preconditions: [],
         steps: [],
         expectedResult: "Success",
-        status: "accepted"
+        status: "accepted",
       },
       {
         id: "case-2",
@@ -41,15 +42,15 @@ describe("ContinueAnalysisButton", () => {
         preconditions: [],
         steps: [],
         expectedResult: "Success",
-        status: "rejected"
-      }
+        status: "rejected",
+      },
     ],
     coverage: [
       {
         requirementId: "req-1",
-        caseIds: ["case-1"]
-      }
-    ]
+        caseIds: ["case-1"],
+      },
+    ],
   };
 
   beforeEach(() => {
@@ -61,26 +62,26 @@ describe("ContinueAnalysisButton", () => {
   });
 
   it("renders the continue analysis button", () => {
-    const { container } = render(
+    render(
       <ContinueAnalysisButton state={mockState} onContinue={mockOnContinue} />
     );
 
-    const button = container.querySelector(".continue-button");
+    const button = screen.getByTestId("continue-button");
     expect(button).toBeInTheDocument();
     expect(button).not.toBeDisabled();
   });
 
   it("calls onContinue with correct payload when clicked twice", async () => {
-    const { container } = render(
+    render(
       <ContinueAnalysisButton state={mockState} onContinue={mockOnContinue} />
     );
 
     // First click shows the input form
-    const button = container.querySelector(".continue-button") as HTMLButtonElement;
+    const button = screen.getByTestId("continue-button");
     fireEvent.click(button);
 
-    // Second click submits the form
-    const submitButton = container.querySelector(".continue-button") as HTMLButtonElement;
+    // Second click submits
+    const submitButton = screen.getAllByRole("button", { name: /继续分析/ })[0];
     fireEvent.click(submitButton);
 
     await waitFor(() => {
@@ -93,29 +94,27 @@ describe("ContinueAnalysisButton", () => {
           unresolvedQuestions: [
             {
               id: "question-1",
-              category: "clarification",
-              text: "Test question"
-            }
-          ]
+              category: "qa",
+              text: "Test question",
+            },
+          ],
         },
-        followUpPrompt: undefined
+        followUpPrompt: undefined,
       });
     });
   });
 
   it("shows loading state after submission", async () => {
-    mockOnContinue.mockImplementation(() => new Promise(() => {})); // Never resolves
+    mockOnContinue.mockImplementation(() => new Promise(() => {}));
 
-    const { container } = render(
+    render(
       <ContinueAnalysisButton state={mockState} onContinue={mockOnContinue} />
     );
 
-    // First click shows the input form
-    const button = container.querySelector(".continue-button") as HTMLButtonElement;
+    const button = screen.getByTestId("continue-button");
     fireEvent.click(button);
 
-    // Second click submits the form
-    const submitButton = container.querySelector(".continue-button") as HTMLButtonElement;
+    const submitButton = screen.getAllByRole("button", { name: /继续分析/ })[0];
     fireEvent.click(submitButton);
 
     await waitFor(() => {
@@ -125,43 +124,38 @@ describe("ContinueAnalysisButton", () => {
   });
 
   it("shows and hides follow-up input when clicking button and cancel", () => {
-    const { container } = render(
+    render(
       <ContinueAnalysisButton state={mockState} onContinue={mockOnContinue} />
     );
 
     // Initially no input visible
-    expect(container.querySelector(".prompt-textarea")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("prompt-textarea")).not.toBeInTheDocument();
 
     // Click to show input
-    const button = container.querySelector(".continue-button") as HTMLButtonElement;
+    const button = screen.getByTestId("continue-button");
     fireEvent.click(button);
 
-    // Input should be visible
-    expect(container.querySelector(".prompt-textarea")).toBeInTheDocument();
+    expect(screen.getByTestId("prompt-textarea")).toBeInTheDocument();
 
     // Click cancel to hide
-    const cancelButton = container.querySelector(".cancel-button") as HTMLButtonElement;
+    const cancelButton = screen.getByTestId("cancel-button");
     fireEvent.click(cancelButton);
 
-    // Input should be hidden again
-    expect(container.querySelector(".prompt-textarea")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("prompt-textarea")).not.toBeInTheDocument();
   });
 
   it("includes follow-up prompt in payload when provided", async () => {
-    const { container } = render(
+    render(
       <ContinueAnalysisButton state={mockState} onContinue={mockOnContinue} />
     );
 
-    // Click to show input
-    const button = container.querySelector(".continue-button") as HTMLButtonElement;
+    const button = screen.getByTestId("continue-button");
     fireEvent.click(button);
 
-    // Type in the textarea
-    const textarea = container.querySelector(".prompt-textarea") as HTMLTextAreaElement;
+    const textarea = screen.getByTestId("prompt-textarea") as HTMLTextAreaElement;
     fireEvent.change(textarea, { target: { value: "请考虑边界情况" } });
 
-    // Click submit
-    const submitButton = container.querySelector(".continue-button") as HTMLButtonElement;
+    const submitButton = screen.getAllByRole("button", { name: /继续分析/ })[0];
     fireEvent.click(submitButton);
 
     await waitFor(() => {
@@ -174,12 +168,12 @@ describe("ContinueAnalysisButton", () => {
           unresolvedQuestions: [
             {
               id: "question-1",
-              category: "clarification",
-              text: "Test question"
-            }
-          ]
+              category: "qa",
+              text: "Test question",
+            },
+          ],
         },
-        followUpPrompt: "请考虑边界情况"
+        followUpPrompt: "请考虑边界情况",
       });
     });
   });
@@ -187,32 +181,26 @@ describe("ContinueAnalysisButton", () => {
   it("disables button when there are no cases", () => {
     const emptyState: AgentState = {
       ...mockState,
-      cases: []
+      cases: [],
     };
 
-    const { container } = render(
+    render(
       <ContinueAnalysisButton state={emptyState} onContinue={mockOnContinue} />
     );
 
-    const button = container.querySelector(".continue-button") as HTMLButtonElement;
+    const button = screen.getByTestId("continue-button");
     expect(button).toBeDisabled();
   });
 
   it("shows counter summary above button", () => {
-    const { container } = render(
+    render(
       <ContinueAnalysisButton state={mockState} onContinue={mockOnContinue} />
     );
 
-    const labels = container.querySelectorAll(".summary-label");
-    const values = container.querySelectorAll(".summary-value");
+    expect(screen.getByTestId("summary-reviewed")).toHaveTextContent("已审核");
+    expect(screen.getByTestId("summary-reviewed")).toHaveTextContent("2 个测试用例");
 
-    expect(labels.length).toBe(2);
-    expect(values.length).toBe(2);
-
-    expect(labels[0]).toHaveTextContent("已审核:");
-    expect(values[0]).toHaveTextContent("2 个测试用例");
-
-    expect(labels[1]).toHaveTextContent("待澄清:");
-    expect(values[1]).toHaveTextContent("1 个问题");
+    expect(screen.getByTestId("summary-questions")).toHaveTextContent("待澄清");
+    expect(screen.getByTestId("summary-questions")).toHaveTextContent("1 个问题");
   });
 });

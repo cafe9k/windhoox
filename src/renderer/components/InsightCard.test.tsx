@@ -1,43 +1,33 @@
 import "@testing-library/jest-dom/vitest";
 import { describe, it, expect } from "vitest";
-import { render } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import { InsightCard } from "./InsightCard";
 
 describe("InsightCard", () => {
   it("renders insight card with business rule", () => {
-    const { container } = render(
+    render(
       <InsightCard
         businessRule="用户必须在删除前确认"
         confidence="high"
       />
     );
 
-    expect(container.textContent).toContain("用户必须在删除前确认");
+    expect(screen.getByText("用户必须在删除前确认")).toBeInTheDocument();
   });
 
   it("renders insight card with risk", () => {
-    const { container } = render(
+    render(
       <InsightCard risk="如果用户忘记可能导致数据丢失" confidence="medium" />
     );
 
-    expect(container.textContent).toContain("如果用户忘记可能导致数据丢失");
+    expect(screen.getByText("如果用户忘记可能导致数据丢失")).toBeInTheDocument();
   });
 
   it("renders confidence badge", () => {
-    const { container } = render(
-      <InsightCard confidence="high" />
-    );
+    render(<InsightCard confidence="high" />);
 
-    expect(container.textContent).toContain("信心度:");
-    expect(container.textContent).toContain("高");
-  });
-
-  it("applies correct CSS class for confidence level", () => {
-    const { container } = render(
-      <InsightCard confidence="high" />
-    );
-
-    const card = container.querySelector(".insight-card");
-    expect(card).toHaveClass("insight-high");
+    const card = screen.getByTestId("insight-card");
+    expect(card.textContent).toContain("信心度:");
+    expect(card.textContent).toContain("高");
   });
 });

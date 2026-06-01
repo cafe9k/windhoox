@@ -1,6 +1,6 @@
 import "@testing-library/jest-dom/vitest";
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import { render, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { Workbench } from "./Workbench";
 
 describe("Workbench", () => {
@@ -21,43 +21,31 @@ describe("Workbench", () => {
   });
 
   it("renders the workbench layout with three panels", () => {
-    const { container } = render(<Workbench />);
+    render(<Workbench />);
 
-    expect(container.querySelector(".workbench")).toBeInTheDocument();
-    expect(container.querySelector(".left-panel")).toBeInTheDocument();
-    expect(container.querySelector(".center-panel")).toBeInTheDocument();
-    expect(container.querySelector(".right-panel")).toBeInTheDocument();
-  });
-
-  it("renders panel headers with correct labels", () => {
-    const { container } = render(<Workbench />);
-
-    const headers = container.querySelectorAll(".panel-header");
-    expect(headers.length).toBe(3);
-    expect(headers[0].textContent).toContain("任务与上下文");
-    expect(headers[1].textContent).toContain("代理分析");
-    expect(headers[2].textContent).toContain("测试用例池");
+    expect(screen.getByText("任务与上下文")).toBeInTheDocument();
+    expect(screen.getByText("代理分析")).toBeInTheDocument();
+    expect(screen.getByText("测试用例池")).toBeInTheDocument();
   });
 
   it("shows empty state when no session exists", () => {
-    const { container } = render(<Workbench />);
+    render(<Workbench />);
 
-    expect(container.textContent).toContain("创建任务开始分析");
-    expect(container.textContent).toContain("未生成测试用例");
+    expect(screen.getByText("创建任务开始分析")).toBeInTheDocument();
+    expect(screen.getByText("未生成测试用例")).toBeInTheDocument();
   });
 
   it("shows task input form when no session exists", () => {
-    const { container } = render(<Workbench />);
+    render(<Workbench />);
 
-    const textarea = container.querySelector("textarea");
-    expect(textarea).toBeInTheDocument();
+    expect(screen.getByRole("textbox")).toBeInTheDocument();
   });
 
   it("calls agent API when form is submitted", async () => {
-    const { container } = render(<Workbench />);
+    render(<Workbench />);
 
-    const textarea = container.querySelector("textarea") as HTMLTextAreaElement;
-    const button = container.querySelector(".start-button") as HTMLButtonElement;
+    const textarea = screen.getByRole("textbox") as HTMLTextAreaElement;
+    const button = screen.getByRole("button", { name: /开始分析/ });
 
     fireEvent.change(textarea, { target: { value: "test requirement" } });
     fireEvent.click(button);
@@ -70,30 +58,30 @@ describe("Workbench", () => {
   });
 
   it("shows running state after analysis starts", async () => {
-    const { container } = render(<Workbench />);
+    render(<Workbench />);
 
-    const textarea = container.querySelector("textarea") as HTMLTextAreaElement;
-    const button = container.querySelector(".start-button") as HTMLButtonElement;
+    const textarea = screen.getByRole("textbox") as HTMLTextAreaElement;
+    const button = screen.getByRole("button", { name: /开始分析/ });
 
     fireEvent.change(textarea, { target: { value: "test requirement" } });
     fireEvent.click(button);
 
     await waitFor(() => {
-      expect(container.textContent).toContain("分析中...");
+      expect(screen.getByText("分析中...")).toBeInTheDocument();
     });
   });
 
   it("displays the requirement text when session is active", async () => {
-    const { container } = render(<Workbench />);
+    render(<Workbench />);
 
-    const textarea = container.querySelector("textarea") as HTMLTextAreaElement;
-    const button = container.querySelector(".start-button") as HTMLButtonElement;
+    const textarea = screen.getByRole("textbox") as HTMLTextAreaElement;
+    const button = screen.getByRole("button", { name: /开始分析/ });
 
     fireEvent.change(textarea, { target: { value: "test requirement" } });
     fireEvent.click(button);
 
     await waitFor(() => {
-      expect(container.textContent).toContain("test requirement");
+      expect(screen.getByText("test requirement")).toBeInTheDocument();
     });
   });
 });
