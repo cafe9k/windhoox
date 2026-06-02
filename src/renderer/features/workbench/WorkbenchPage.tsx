@@ -5,6 +5,7 @@ import { WorkbenchLayout } from "./WorkbenchLayout";
 import { LeftContextPanel } from "./LeftContextPanel";
 import { AgentConversationPanel } from "./AgentConversationPanel";
 import { TestArtifactPanel } from "./TestArtifactPanel";
+import { AgentProgressBadge } from "./AgentProgressBadge";
 import { agentStateReducer, type AgentState } from "../agent/agentState";
 import type { AgentEvent } from "../../../types/agent";
 import { DEMO_EVENTS, DEMO_REQUIREMENT, DEMO_SESSION_ID } from "../../demo-data";
@@ -19,7 +20,7 @@ interface Session {
   requirement?: string;
 }
 
-function TopBar({ status }: { status: SessionStatus }) {
+function TopBar({ status, events }: { status: SessionStatus; events: AgentEvent[] }) {
   const statusText = {
     idle: "就绪",
     running: "分析中...",
@@ -40,6 +41,10 @@ function TopBar({ status }: { status: SessionStatus }) {
         <Text strong>Windhoox</Text>
         <Tag color="processing">测试设计工作台</Tag>
       </Space>
+
+      {/* Center: Agent Progress */}
+      <AgentProgressBadge status={status} events={events} />
+
       <Space size={16}>
         <Space size={4}>
           <CheckCircleOutlined style={{ color: statusColor }} />
@@ -174,10 +179,9 @@ export function WorkbenchPage() {
 
   return (
     <WorkbenchLayout
-      topBar={<TopBar status={status} />}
+      topBar={<TopBar status={status} events={events} />}
       left={
         <LeftContextPanel
-          agentStatus={status}
           onNewSession={handleNewSession}
           onSessionClick={(key) => console.log("Session clicked:", key)}
           contexts={events.filter((e) => e.type === "reading_sources").map((e) => ({

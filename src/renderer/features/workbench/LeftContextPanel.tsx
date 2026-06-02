@@ -1,6 +1,6 @@
-import { Button, Typography, Divider, Empty, Badge, Tag, Space, List } from "antd";
-import { PlusOutlined, FileTextOutlined, QuestionCircleOutlined, ClockCircleOutlined, FileOutlined, CodeOutlined, ApiOutlined } from "@ant-design/icons";
-import { Conversations, FileCard } from "@ant-design/x";
+import { Button, Typography, Divider, Empty, Tag, Space, List } from "antd";
+import { PlusOutlined, FileTextOutlined, QuestionCircleOutlined, FileOutlined, CodeOutlined, ApiOutlined } from "@ant-design/icons";
+import { Conversations } from "@ant-design/x";
 
 const { Text } = Typography;
 
@@ -18,7 +18,6 @@ interface SessionItem {
 interface LeftContextPanelProps {
   sessions?: SessionItem[];
   contexts?: ContextReference[];
-  agentStatus?: "idle" | "running" | "completed" | "failed";
   onNewSession?: () => void;
   onSessionClick?: (key: string) => void;
   onContextClick?: (name: string) => void;
@@ -61,7 +60,6 @@ const MOCK_CONVERSATIONS: SessionItem[] = [
 export function LeftContextPanel({
   sessions = MOCK_CONVERSATIONS,
   contexts = [],
-  agentStatus = "idle",
   onNewSession,
   onSessionClick,
   onContextClick,
@@ -69,9 +67,6 @@ export function LeftContextPanel({
   const handleConversationClick = (key: string) => {
     onSessionClick?.(key);
   };
-
-  const statusColor = agentStatus === "running" ? "processing" : agentStatus === "failed" ? "error" : "success";
-  const statusText = agentStatus === "running" ? "分析中" : agentStatus === "failed" ? "异常" : "就绪";
 
   return (
     <div className="left-panel">
@@ -134,20 +129,6 @@ export function LeftContextPanel({
         )}
       </div>
 
-      <div className="left-panel-footer">
-        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-          <Badge status={statusColor as "success" | "processing" | "error" | "default" | "warning"} />
-          <Text type="secondary" style={{ fontSize: 11 }}>
-            Agent {statusText}
-          </Text>
-        </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 4 }}>
-          <ClockCircleOutlined style={{ fontSize: 11, color: "#8c8c8c" }} />
-          <Text type="secondary" style={{ fontSize: 11 }}>
-            DeepSeek API 已连接
-          </Text>
-        </div>
-      </div>
     </div>
   );
 }
