@@ -15,12 +15,30 @@ interface BubbleItem {
   content: string;
   placement?: "left" | "right";
   role?: "user" | "assistant" | "system";
-  avatar?: {
-    icon: React.ReactNode;
-    style?: React.CSSProperties;
-  };
+  avatar?: React.ReactNode;
   loading?: boolean;
   typing?: boolean;
+}
+
+// Helper to create styled avatar
+function StyledAvatar({ icon, bg }: { icon: React.ReactNode; bg: string }) {
+  return (
+    <span
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        width: 32,
+        height: 32,
+        borderRadius: "50%",
+        backgroundColor: bg,
+        color: "#fff",
+        fontSize: 16,
+      }}
+    >
+      {icon}
+    </span>
+  );
 }
 
 /**
@@ -34,10 +52,7 @@ export function eventToBubble(event: AgentEvent): BubbleItem | null {
         content: "开始分析测试需求...",
         role: "assistant",
         placement: "left",
-        avatar: {
-          icon: <PlayCircleOutlined />,
-          style: { backgroundColor: "#1677ff" },
-        },
+        avatar: <StyledAvatar icon={<PlayCircleOutlined />} bg="#1677ff" />,
       };
 
     case "reading_sources":
@@ -46,10 +61,7 @@ export function eventToBubble(event: AgentEvent): BubbleItem | null {
         content: `正在读取资料：${event.source}`,
         role: "assistant",
         placement: "left",
-        avatar: {
-          icon: <ReadOutlined />,
-          style: { backgroundColor: "#52c41a" },
-        },
+        avatar: <StyledAvatar icon={<ReadOutlined />} bg="#52c41a" />,
       };
 
     case "requirement_insight":
@@ -58,10 +70,7 @@ export function eventToBubble(event: AgentEvent): BubbleItem | null {
         content: formatInsight(event.insight),
         role: "assistant",
         placement: "left",
-        avatar: {
-          icon: <BulbOutlined />,
-          style: { backgroundColor: "#faad14" },
-        },
+        avatar: <StyledAvatar icon={<BulbOutlined />} bg="#faad14" />,
       };
 
     case "missing_questions":
@@ -70,10 +79,7 @@ export function eventToBubble(event: AgentEvent): BubbleItem | null {
         content: formatQuestions(event.questions),
         role: "assistant",
         placement: "left",
-        avatar: {
-          icon: <QuestionCircleOutlined />,
-          style: { backgroundColor: "#722ed1" },
-        },
+        avatar: <StyledAvatar icon={<QuestionCircleOutlined />} bg="#722ed1" />,
       };
 
     case "case_candidates":
@@ -82,10 +88,7 @@ export function eventToBubble(event: AgentEvent): BubbleItem | null {
         content: `已生成 ${event.cases.length} 条候选测试用例`,
         role: "assistant",
         placement: "left",
-        avatar: {
-          icon: <CheckCircleOutlined />,
-          style: { backgroundColor: "#52c41a" },
-        },
+        avatar: <StyledAvatar icon={<CheckCircleOutlined />} bg="#52c41a" />,
       };
 
     case "coverage_matrix":
@@ -94,10 +97,7 @@ export function eventToBubble(event: AgentEvent): BubbleItem | null {
         content: `已生成覆盖矩阵，共 ${event.matrix.length} 个需求点`,
         role: "assistant",
         placement: "left",
-        avatar: {
-          icon: <BarChartOutlined />,
-          style: { backgroundColor: "#13c2c2" },
-        },
+        avatar: <StyledAvatar icon={<BarChartOutlined />} bg="#13c2c2" />,
       };
 
     case "run_completed":
@@ -106,10 +106,7 @@ export function eventToBubble(event: AgentEvent): BubbleItem | null {
         content: "分析完成！测试用例已生成，请在右侧面板查看和评审。",
         role: "assistant",
         placement: "left",
-        avatar: {
-          icon: <CheckCircleOutlined />,
-          style: { backgroundColor: "#52c41a" },
-        },
+        avatar: <StyledAvatar icon={<CheckCircleOutlined />} bg="#52c41a" />,
       };
 
     case "run_failed":
@@ -118,10 +115,7 @@ export function eventToBubble(event: AgentEvent): BubbleItem | null {
         content: `分析失败：${event.error}`,
         role: "assistant",
         placement: "left",
-        avatar: {
-          icon: <CloseCircleOutlined />,
-          style: { backgroundColor: "#ff4d4f" },
-        },
+        avatar: <StyledAvatar icon={<CloseCircleOutlined />} bg="#ff4d4f" />,
       };
 
     case "case_reviewed":
@@ -155,10 +149,7 @@ export function createLoadingBubble(): BubbleItem {
     role: "assistant",
     placement: "left",
     loading: true,
-    avatar: {
-      icon: <PlayCircleOutlined />,
-      style: { backgroundColor: "#1677ff" },
-    },
+    avatar: <StyledAvatar icon={<PlayCircleOutlined />} bg="#1677ff" />,
   };
 }
 
