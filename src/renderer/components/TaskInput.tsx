@@ -22,7 +22,11 @@ export function TaskInput({ onSubmit, onLoadDemo, isLoading = false }: TaskInput
   return (
     <Form layout="vertical" className="wh-task-form">
       <Form.Item
-        label="需求描述"
+        label={
+          <span style={{ fontSize: 12, fontWeight: 600, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.04em" }}>
+            需求描述
+          </span>
+        }
         style={{ flex: 1, marginBottom: 0, display: "flex", flexDirection: "column" }}
       >
         <Input.TextArea
@@ -31,13 +35,13 @@ export function TaskInput({ onSubmit, onLoadDemo, isLoading = false }: TaskInput
           value={requirement}
           onChange={(e) => setRequirement(e.target.value)}
           disabled={isLoading}
-          rows={8}
+          rows={10}
           className="wh-task-textarea"
-          style={{ flex: 1, resize: "none", padding: 12 }}
+          style={{ flex: 1, resize: "none", padding: 12, fontFamily: "var(--font-mono)", fontSize: 13, lineHeight: 1.6 }}
         />
       </Form.Item>
 
-      <Form.Item style={{ marginTop: 16, marginBottom: 0 }}>
+      <Form.Item style={{ marginTop: 14, marginBottom: 0 }}>
         <Space direction="vertical" style={{ width: "100%" }}>
           <Button
             data-testid="start-button"

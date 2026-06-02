@@ -88,10 +88,15 @@ export function SettingsPanel({ onClose }: SettingsPanelProps) {
   return (
     <Modal
       open
-      title={<span style={{ fontWeight: 600, fontSize: 15 }}>设置</span>}
+      title={
+        <span style={{ fontWeight: 600, fontSize: 15, color: "var(--text-primary)" }}>
+          设置
+        </span>
+      }
       onCancel={onClose}
       footer={null}
       width={520}
+      bodyStyle={{ padding: 24 }}
     >
       <Form
         form={form}
@@ -106,7 +111,7 @@ export function SettingsPanel({ onClose }: SettingsPanelProps) {
         <Form.Item
           label={
             <Space>
-              <span>API Key</span>
+              <span style={{ color: "var(--text-secondary)" }}>API Key</span>
               {apiKeySource && (
                 <Tag
                   color={
@@ -116,6 +121,7 @@ export function SettingsPanel({ onClose }: SettingsPanelProps) {
                         ? "green"
                         : "default"
                   }
+                  style={{ fontSize: 11 }}
                 >
                   {apiKeySource.label}
                 </Tag>
@@ -139,6 +145,7 @@ export function SettingsPanel({ onClose }: SettingsPanelProps) {
             iconRender={(visible) =>
               visible ? <EyeOutlined /> : <EyeInvisibleOutlined />
             }
+            style={{ fontFamily: "var(--font-mono)", fontSize: 13 }}
           />
         </Form.Item>
 
@@ -149,8 +156,8 @@ export function SettingsPanel({ onClose }: SettingsPanelProps) {
             message="API Key 来自环境变量"
             description={
               <>
-                API Key 来自 <code>.env.local</code> 环境变量，不可在 UI 中修改。如需修改，请编辑项目根目录下的{" "}
-                <code>.env.local</code> 文件后重启应用。
+                API Key 来自 <code style={{ fontFamily: "var(--font-mono)" }}>.env.local</code> 环境变量，不可在 UI 中修改。如需修改，请编辑项目根目录下的{" "}
+                <code style={{ fontFamily: "var(--font-mono)" }}>.env.local</code> 文件后重启应用。
               </>
             }
             style={{ marginBottom: 16 }}
@@ -159,7 +166,7 @@ export function SettingsPanel({ onClose }: SettingsPanelProps) {
           <div
             style={{
               fontSize: 12,
-              color: "var(--color-text-muted)",
+              color: "var(--text-muted)",
               marginBottom: 16,
             }}
           >
@@ -168,7 +175,7 @@ export function SettingsPanel({ onClose }: SettingsPanelProps) {
               href="https://platform.deepseek.com/api_keys"
               target="_blank"
               rel="noopener"
-              style={{ color: "var(--color-primary)" }}
+              style={{ color: "var(--accent)" }}
             >
               DeepSeek 控制台
             </a>{" "}
@@ -176,11 +183,11 @@ export function SettingsPanel({ onClose }: SettingsPanelProps) {
           </div>
         )}
 
-        <Form.Item label="Base URL" name="baseUrl">
-          <Input placeholder="https://api.deepseek.com" />
+        <Form.Item label={<span style={{ color: "var(--text-secondary)" }}>Base URL</span>} name="baseUrl">
+          <Input placeholder="https://api.deepseek.com" style={{ fontFamily: "var(--font-mono)", fontSize: 13 }} />
         </Form.Item>
 
-        <Form.Item label="模型" name="model">
+        <Form.Item label={<span style={{ color: "var(--text-secondary)" }}>模型</span>} name="model">
           <Select>
             <Select.Option value="deepseek-reasoner">
               deepseek-reasoner（推理能力强，适合复杂分析）

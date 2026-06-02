@@ -27,11 +27,11 @@ interface Session {
   requirement?: string;
 }
 
-const statusTagConfig: Record<SessionState, { text: string; color: string }> = {
-  idle: { text: "就绪", color: "success" },
-  running: { text: "分析中...", color: "processing" },
-  completed: { text: "分析完成", color: "purple" },
-  failed: { text: "分析失败", color: "error" },
+const statusConfig: Record<SessionState, { text: string; dotClass: string }> = {
+  idle: { text: "就绪", dotClass: "wh-status-dot--success" },
+  running: { text: "分析中...", dotClass: "wh-status-dot--info" },
+  completed: { text: "分析完成", dotClass: "wh-status-dot--success" },
+  failed: { text: "分析失败", dotClass: "wh-status-dot--error" },
 };
 
 export function Workbench() {
@@ -223,8 +223,10 @@ export function Workbench() {
     [agentApi]
   );
 
+  const cfg = session ? statusConfig[session.state] : null;
+
   return (
-    <Layout style={{ minHeight: "100dvh", background: "var(--color-bg)" }}>
+    <Layout style={{ minHeight: "100dvh", background: "var(--bg-main)" }}>
       {showSettings && <SettingsPanel onClose={() => setShowSettings(false)} />}
 
       {/* ─── Left Sidebar ─── */}
@@ -237,41 +239,45 @@ export function Workbench() {
         <Card
           title={
             <Space>
-              <FileTextOutlined style={{ color: "var(--color-primary)" }} />
-              <span>任务与上下文</span>
+              <FileTextOutlined style={{ color: "var(--text-muted)", fontSize: 14 }} />
+              <span style={{ fontSize: 12, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.04em" }}>
+                任务与上下文
+              </span>
             </Space>
           }
           extra={
             <Button
               type="text"
+              size="small"
               icon={<SettingOutlined />}
               onClick={() => setShowSettings(true)}
               title="设置"
+              style={{ color: "var(--text-muted)" }}
             />
           }
           className="wh-sidebar-card"
         >
-          <div style={{ padding: 16, height: "calc(100dvh - 48px)", overflow: "auto" }}>
+          <div style={{ padding: 12, height: "calc(100dvh - 40px)", overflow: "auto" }}>
             {!session ? (
               <TaskInput
                 onSubmit={handleStartAnalysis}
                 onLoadDemo={handleLoadDemo}
               />
             ) : (
-              <Space direction="vertical" style={{ width: "100%" }}>
-                <Tag
-                  color={statusTagConfig[session.state].color}
-                  className="wh-status-tag"
-                >
-                  {statusTagConfig[session.state].text}
-                </Tag>
+              <Space direction="vertical" style={{ width: "100%" }} size={12}>
+                {cfg && (
+                  <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, fontWeight: 500 }}>
+                    <span className={`wh-status-dot ${cfg.dotClass}`} />
+                    <span style={{ color: "var(--text-secondary)" }}>{cfg.text}</span>
+                  </div>
+                )}
                 {session.requirement && (
-                  <Card size="small" className="wh-requirement-card">
+                  <div className="wh-requirement-card" style={{ border: "1px solid var(--border)", borderRadius: 6, padding: 12 }}>
                     <span className="wh-requirement-label">需求</span>
                     <div className="wh-requirement-text">
                       {session.requirement}
                     </div>
-                  </Card>
+                  </div>
                 )}
               </Space>
             )}
@@ -284,13 +290,13 @@ export function Workbench() {
         <Card
           title={
             <Space>
-              <BulbOutlined style={{ color: "var(--color-warning)" }} />
-              <span>代理分析</span>
+              <BulbOutlined style={{ color: "var(--text-muted)", fontSize: 14 }} />
+              <span style={{ fontSize: 13, fontWeight: 600 }}>代理分析</span>
             </Space>
           }
           className="wh-content-card"
         >
-          <div style={{ height: "calc(100% - 48px)", overflow: "auto" }}>
+          <div style={{ height: "calc(100% - 44px)", overflow: "auto" }}>
             {!session ? (
               <Empty
                 image={
@@ -300,8 +306,10 @@ export function Workbench() {
                 }
                 description={
                   <Space direction="vertical" align="center">
-                    <Text style={{ fontWeight: 500 }}>创建任务开始分析</Text>
-                    <Text type="secondary" style={{ fontSize: 12 }}>
+                    <Text style={{ fontWeight: 500, color: "var(--text-secondary)" }}>
+                      创建任务开始分析
+                    </Text>
+                    <Text style={{ fontSize: 12, color: "var(--text-muted)" }}>
                       在左侧面板输入需求描述
                     </Text>
                   </Space>
@@ -310,16 +318,16 @@ export function Workbench() {
             ) : session.state === "failed" ? (
               <Empty
                 image={
-                  <div className="wh-empty-icon" style={{ color: "var(--color-error)" }}>
+                  <div className="wh-empty-icon" style={{ color: "var(--status-error)" }}>
                     <FileTextOutlined />
                   </div>
                 }
                 description={
                   <Space direction="vertical" align="center">
-                    <Text style={{ fontWeight: 500, color: "var(--color-error)" }}>
+                    <Text style={{ fontWeight: 500, color: "var(--status-error)" }}>
                       分析失败
                     </Text>
-                    <Text type="secondary" style={{ fontSize: 12, maxWidth: 400, textAlign: "center" }}>
+                    <Text style={{ fontSize: 12, maxWidth: 400, textAlign: "center", color: "var(--text-muted)" }}>
                       {apiError || "未知错误，请检查 DeepSeek API Key 配置后重试"}
                     </Text>
                   </Space>
@@ -330,8 +338,10 @@ export function Workbench() {
                 image={<Spin size="large" style={{ marginBottom: 16 }} />}
                 description={
                   <Space direction="vertical" align="center">
-                    <Text style={{ fontWeight: 500 }}>分析进行中...</Text>
-                    <Text type="secondary" style={{ fontSize: 12 }}>
+                    <Text style={{ fontWeight: 500, color: "var(--text-secondary)" }}>
+                      分析进行中...
+                    </Text>
+                    <Text style={{ fontSize: 12, color: "var(--text-muted)" }}>
                       代理正在处理您的需求
                     </Text>
                   </Space>
@@ -362,7 +372,11 @@ export function Workbench() {
                     <FileTextOutlined />
                   </div>
                 }
-                description="分析结果将在这里显示"
+                description={
+                  <span style={{ color: "var(--text-muted)", fontSize: 13 }}>
+                    分析结果将在这里显示
+                  </span>
+                }
               />
             )}
           </div>
@@ -379,15 +393,17 @@ export function Workbench() {
         <Card
           title={
             <Space>
-              <ExperimentOutlined style={{ color: "var(--color-success)" }} />
-              <span>测试用例池</span>
+              <ExperimentOutlined style={{ color: "var(--text-muted)", fontSize: 14 }} />
+              <span style={{ fontSize: 12, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.04em" }}>
+                测试用例池
+              </span>
             </Space>
           }
           className="wh-sidebar-card"
         >
-          <div style={{ padding: 16, height: "calc(100dvh - 48px)", overflow: "auto" }}>
+          <div style={{ padding: 12, height: "calc(100dvh - 40px)", overflow: "auto" }}>
             {!agentState?.cases.length ? (
-              <Empty description="未生成测试用例" />
+              <Empty description={<span style={{ color: "var(--text-muted)", fontSize: 13 }}>未生成测试用例</span>} />
             ) : (
               <Space direction="vertical" style={{ width: "100%" }}>
                 <TestCaseCounter counts={caseCounts} />
