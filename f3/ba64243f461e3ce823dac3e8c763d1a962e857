@@ -1,0 +1,50 @@
+src/renderer/features/workbench/AgentConversationPanel.tsx
+  s_1d05c674ef3d5d::t_44d80a56e2cf88 36-41,44-65
+  s_1d05c674ef3d5d::t_94f493edb2f127 95-98
+  s_1d05c674ef3d5d::t_2a7da5483f87ac 2
+  s_1d05c674ef3d5d::t_293f51b8ed5bdf 154,162-171
+src/renderer/styles/layout.css
+  s_7043b46da631bd::t_e73f60e000a14f 148-276
+src/renderer/features/workbench/AgentProgressBadge.test.tsx
+  s_1d05c674ef3d5d::t_7ed3c77eddf6b0 33-34
+  s_7043b46da631bd::t_e1879b01511a8d 54-59
+  s_7043b46da631bd::t_368631c4cfdc25 3
+  s_7043b46da631bd::t_fdb97d2dcf861c 81
+  s_7043b46da631bd::t_317fbec40b090f 2,4-32,35-53,60-80,82-104,111-128
+  s_7043b46da631bd::t_986766dd3499c5 105-110
+  s_1d05c674ef3d5d::t_3af4ee173ae2f6 1
+src/renderer/features/workbench/AgentProgressBadge.tsx
+  s_7043b46da631bd::t_ece56a851c78ca 1-110,124-126,129-134,136-242,244-255
+  s_1d05c674ef3d5d::t_53a2b302b8e78d 111-123,127-128,135
+  s_1d05c674ef3d5d::t_8fb1d7b3998497 243
+src/renderer/features/workbench/WorkbenchPage.tsx
+  s_7043b46da631bd::t_451cd725181ccd 182
+  s_7043b46da631bd::t_2581254b26ee45 8,23,44-47
+src/renderer/features/workbench/LeftContextPanel.tsx
+  s_1d05c674ef3d5d::t_8c65c82eb20add 2
+  s_1d05c674ef3d5d::t_bdf99491a9f15d 1,3
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.10-trip",
+  "base_commit_sha": "f3ba64243f461e3ce823dac3e8c763d1a962e857",
+  "prompts": {},
+  "sessions": {
+    "s_1d05c674ef3d5d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "54082f9b-08d8-4982-8223-d1d44afd963a",
+        "model": "qwen3.7-max"
+      },
+      "human_author": "qingqing.zhang <qingqing.zhang@trip.com>"
+    },
+    "s_7043b46da631bd": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2046210f-8025-45d5-8c16-29933447f494",
+        "model": "qwen3.7-max"
+      },
+      "human_author": "qingqing.zhang <qingqing.zhang@trip.com>"
+    }
+  }
+}
