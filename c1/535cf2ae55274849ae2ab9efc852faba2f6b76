@@ -1,0 +1,34 @@
+CLAUDE.md
+  s_1d05c674ef3d5d::t_bd171e6f2eb341 4
+AGENTS.md
+  s_1d05c674ef3d5d::t_bd171e6f2eb341 4
+src/renderer/features/workbench/WorkbenchPage.tsx
+  s_1d05c674ef3d5d::t_dff8123a3d7ef8 24-32,66-73
+  s_1d05c674ef3d5d::t_df5df66362d8d5 1-2,9
+  s_1d05c674ef3d5d::t_31e59a095e37ef 199-201
+  s_1d05c674ef3d5d::t_9140dcb690b221 83
+  s_1d05c674ef3d5d::t_a7af0e1097e7aa 231-235
+src/renderer/features/workbench/AIConfigModal.tsx
+  s_1d05c674ef3d5d::t_fd77ff886e50ef 1-150
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.10-trip",
+  "base_commit_sha": "c1535cf2ae55274849ae2ab9efc852faba2f6b76",
+  "prompts": {},
+  "humans": {
+    "h_42daa5df821dff": {
+      "author": "qingqing.zhang <qingqing.zhang@trip.com>"
+    }
+  },
+  "sessions": {
+    "s_1d05c674ef3d5d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "54082f9b-08d8-4982-8223-d1d44afd963a",
+        "model": "qwen3.7-max"
+      },
+      "human_author": "qingqing.zhang <qingqing.zhang@trip.com>"
+    }
+  }
+}
