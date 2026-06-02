@@ -1,0 +1,23 @@
+CLAUDE.md
+  s_7043b46da631bd::t_e4b03776aa8147 4
+.claude/skills/gitnexus/gitnexus-cli/SKILL.md
+  s_7043b46da631bd::t_e4b03776aa8147 26
+AGENTS.md
+  s_7043b46da631bd::t_e4b03776aa8147 4
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.10-trip",
+  "base_commit_sha": "debf82e8e3a396f70e5cda4515dcb617e67cef67",
+  "prompts": {},
+  "sessions": {
+    "s_7043b46da631bd": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2046210f-8025-45d5-8c16-29933447f494",
+        "model": "qwen3.7-max"
+      },
+      "human_author": "qingqing.zhang <qingqing.zhang@trip.com>"
+    }
+  }
+}
