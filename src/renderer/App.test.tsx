@@ -14,8 +14,10 @@ describe("App", () => {
   it("renders the workbench layout", () => {
     render(<App />);
 
-    expect(screen.getByText("任务与上下文")).toBeInTheDocument();
+    // New layout: LeftRail + Canvas + ActionGrid
+    expect(screen.getByTestId("left-rail")).toBeInTheDocument();
+    expect(screen.getByTestId("canvas")).toBeInTheDocument();
+    expect(screen.getByTestId("action-grid")).toBeInTheDocument();
     expect(screen.getByText("代理分析")).toBeInTheDocument();
-    expect(screen.getByText("测试用例池")).toBeInTheDocument();
   });
 });

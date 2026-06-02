@@ -23,16 +23,20 @@ describe("Workbench", () => {
   it("renders the workbench layout with three panels", () => {
     render(<Workbench />);
 
-    expect(screen.getByText("任务与上下文")).toBeInTheDocument();
+    // New layout: LeftRail + Canvas + ActionGrid
+    expect(screen.getByTestId("left-rail")).toBeInTheDocument();
+    expect(screen.getByTestId("canvas")).toBeInTheDocument();
+    expect(screen.getByTestId("action-grid")).toBeInTheDocument();
     expect(screen.getByText("代理分析")).toBeInTheDocument();
-    expect(screen.getByText("测试用例池")).toBeInTheDocument();
   });
 
   it("shows empty state when no session exists", () => {
     render(<Workbench />);
 
-    expect(screen.getByText("创建任务开始分析")).toBeInTheDocument();
-    expect(screen.getByText("未生成测试用例")).toBeInTheDocument();
+    // LeftRail shows empty session message
+    expect(screen.getByText("还没有分析记录")).toBeInTheDocument();
+    // Canvas shows the analysis title
+    expect(screen.getByText("代理分析")).toBeInTheDocument();
   });
 
   it("shows task input form when no session exists", () => {
