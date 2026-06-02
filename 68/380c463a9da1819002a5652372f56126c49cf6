@@ -1,0 +1,21 @@
+src/renderer/features/workbench/eventToBubble.tsx
+  s_1d05c674ef3d5d::t_2d378597c8331c 18,23-41
+  s_1d05c674ef3d5d::t_44fe7c6e002bce 55,64,73,82,91,100,109,118
+  s_1d05c674ef3d5d::t_4e3236a99e4614 152
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.10-trip",
+  "base_commit_sha": "68380c463a9da1819002a5652372f56126c49cf6",
+  "prompts": {},
+  "sessions": {
+    "s_1d05c674ef3d5d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "54082f9b-08d8-4982-8223-d1d44afd963a",
+        "model": "qwen3.7-max"
+      },
+      "human_author": "qingqing.zhang <qingqing.zhang@trip.com>"
+    }
+  }
+}
