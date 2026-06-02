@@ -1,11 +1,12 @@
-import { Typography, Space, Tag, message } from "antd";
-import { CloudOutlined, CheckCircleOutlined } from "@ant-design/icons";
+import { Typography, Space, Tag, Button, message } from "antd";
+import { CloudOutlined, CheckCircleOutlined, SettingOutlined } from "@ant-design/icons";
 import { useState, useCallback, useReducer, useMemo, useEffect } from "react";
 import { WorkbenchLayout } from "./WorkbenchLayout";
 import { LeftContextPanel } from "./LeftContextPanel";
 import { AgentConversationPanel } from "./AgentConversationPanel";
 import { TestArtifactPanel } from "./TestArtifactPanel";
 import { AgentProgressBadge } from "./AgentProgressBadge";
+import { AIConfigModal } from "./AIConfigModal";
 import { agentStateReducer, type AgentState } from "../agent/agentState";
 import type { AgentEvent } from "../../../types/agent";
 import { DEMO_EVENTS, DEMO_REQUIREMENT, DEMO_SESSION_ID } from "../../demo-data";
@@ -20,7 +21,15 @@ interface Session {
   requirement?: string;
 }
 
-function TopBar({ status, events }: { status: SessionStatus; events: AgentEvent[] }) {
+function TopBar({
+  status,
+  events,
+  onOpenConfig,
+}: {
+  status: SessionStatus;
+  events: AgentEvent[];
+  onOpenConfig: () => void;
+}) {
   const statusText = {
     idle: "就绪",
     running: "分析中...",
@@ -54,6 +63,14 @@ function TopBar({ status, events }: { status: SessionStatus; events: AgentEvent[
           <CloudOutlined style={{ color: "#1677ff" }} />
           <Text type="secondary" style={{ fontSize: 12 }}>DeepSeek API</Text>
         </Space>
+        <Button
+          type="text"
+          size="small"
+          icon={<SettingOutlined />}
+          onClick={onOpenConfig}
+        >
+          AI 配置
+        </Button>
       </Space>
     </div>
   );
@@ -63,6 +80,7 @@ export function WorkbenchPage() {
   const [session, setSession] = useState<Session | null>(null);
   const [agentState, dispatch] = useReducer(agentStateReducer, null as AgentState | null);
   const [events, setEvents] = useState<AgentEvent[]>([]);
+  const [configModalOpen, setConfigModalOpen] = useState(false);
   const agentApi = (window as any).windhoox?.agent;
 
   // Subscribe to agent events
@@ -178,8 +196,9 @@ export function WorkbenchPage() {
   const sessionId = session?.id;
 
   return (
-    <WorkbenchLayout
-      topBar={<TopBar status={status} events={events} />}
+    <>
+      <WorkbenchLayout
+        topBar={<TopBar status={status} events={events} onOpenConfig={() => setConfigModalOpen(true)} />}
       left={
         <LeftContextPanel
           onNewSession={handleNewSession}
@@ -209,5 +228,10 @@ export function WorkbenchPage() {
         />
       }
     />
+    <AIConfigModal
+      open={configModalOpen}
+      onClose={() => setConfigModalOpen(false)}
+    />
+    </>
   );
 }
