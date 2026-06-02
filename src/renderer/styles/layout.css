@@ -274,3 +274,37 @@
   border-radius: 4px;
   font-size: 12px;
 }
+
+/* ─── Right Panel Toggle ─── */
+
+.workbench-right-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  background: #fafafa;
+  border-right: 1px solid #e8e8e8;
+  flex-shrink: 0;
+}
+
+.right-toggle-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 40px;
+  padding: 0;
+  border: 1px solid #d9d9d9;
+  border-radius: 4px;
+  background: #ffffff;
+  color: #595959;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 12px;
+}
+
+.right-toggle-btn:hover {
+  background: #f0f0f0;
+  border-color: #1677ff;
+  color: #1677ff;
+}

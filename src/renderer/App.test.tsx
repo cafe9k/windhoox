@@ -1,5 +1,5 @@
 import "@testing-library/jest-dom/vitest";
-import { render, screen } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 import { beforeEach, describe, expect, it } from "vitest";
 import { App } from "./App";
 
@@ -27,7 +27,10 @@ describe("App", () => {
     expect(screen.getByText("开始一次测试设计任务")).toBeInTheDocument();
     expect(screen.getByText("快捷任务")).toBeInTheDocument();
 
-    // Right panel
+    // Right panel - initially collapsed, click toggle to expand
+    const toggleBtn = screen.getByTitle("展开测试资产池");
+    fireEvent.click(toggleBtn);
+
     expect(screen.getByText("测试资产池")).toBeInTheDocument();
     expect(screen.getByText("候选用例")).toBeInTheDocument();
   });
