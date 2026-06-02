@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { agentStateReducer } from "./agent-state";
-import type { AgentEvent, RequirementInsightEvent, CaseCandidatesEvent } from "../../types/agent";
+import { agentStateReducer } from "./agentState";
+import type { AgentEvent, RequirementInsightEvent, CaseCandidatesEvent } from "../../../types/agent";
 
 describe("agentStateReducer", () => {
   it("initializes state on run_started event", () => {

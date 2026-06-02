@@ -8,6 +8,17 @@ global.ResizeObserver = class ResizeObserver {
   disconnect = vi.fn();
 };
 
+// Mock IntersectionObserver for @ant-design/x Bubble component
+global.IntersectionObserver = class IntersectionObserver {
+  root = null;
+  rootMargin = "";
+  thresholds: number[] = [];
+  observe = vi.fn();
+  unobserve = vi.fn();
+  disconnect = vi.fn();
+  takeRecords = vi.fn().mockReturnValue([]);
+} as unknown as typeof IntersectionObserver;
+
 // Mock matchMedia for antd responsive components
 if (typeof window !== "undefined") {
   Object.defineProperty(window, "matchMedia", {
