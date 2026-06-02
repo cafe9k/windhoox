@@ -1,0 +1,24 @@
+.env.local.example
+  s_1d05c674ef3d5d::t_08c7bd79109397 1-7
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.10-trip",
+  "base_commit_sha": "d4c7c781d3f5f4d62c74b5221e5b2c8ab3b947a9",
+  "prompts": {},
+  "humans": {
+    "h_42daa5df821dff": {
+      "author": "qingqing.zhang <qingqing.zhang@trip.com>"
+    }
+  },
+  "sessions": {
+    "s_1d05c674ef3d5d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "54082f9b-08d8-4982-8223-d1d44afd963a",
+        "model": "qwen3.7-max"
+      },
+      "human_author": "qingqing.zhang <qingqing.zhang@trip.com>"
+    }
+  }
+}
