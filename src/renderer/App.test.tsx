@@ -1,5 +1,5 @@
 import "@testing-library/jest-dom/vitest";
-import { render, screen } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 import { beforeEach, describe, expect, it } from "vitest";
 import { App } from "./App";
 
@@ -11,13 +11,27 @@ describe("App", () => {
     };
   });
 
-  it("renders the workbench layout", () => {
+  it("renders the three-column workbench", () => {
     render(<App />);
 
-    // New layout: LeftRail + Canvas + ActionGrid
-    expect(screen.getByTestId("left-rail")).toBeInTheDocument();
-    expect(screen.getByTestId("canvas")).toBeInTheDocument();
-    expect(screen.getByTestId("action-grid")).toBeInTheDocument();
-    expect(screen.getByText("代理分析")).toBeInTheDocument();
+    // Top bar
+    expect(screen.getByText("Windhoox")).toBeInTheDocument();
+    expect(screen.getByText("测试设计工作台")).toBeInTheDocument();
+
+    // Left panel
+    expect(screen.getByText("新建测试任务")).toBeInTheDocument();
+    expect(screen.getByText("共同购买推荐资源逻辑")).toBeInTheDocument();
+    expect(screen.getByText("办签材料自动分类")).toBeInTheDocument();
+
+    // Center panel
+    expect(screen.getByText("开始一次测试设计任务")).toBeInTheDocument();
+    expect(screen.getByText("快捷任务")).toBeInTheDocument();
+
+    // Right panel - initially collapsed, click toggle to expand
+    const toggleBtn = screen.getByTitle("展开测试资产池");
+    fireEvent.click(toggleBtn);
+
+    expect(screen.getByText("测试资产池")).toBeInTheDocument();
+    expect(screen.getByText("候选用例")).toBeInTheDocument();
   });
 });

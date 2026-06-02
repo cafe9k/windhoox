@@ -1,4 +1,4 @@
-import type { AgentEvent } from "../../types/agent";
+import type { AgentEvent } from "../../../types/agent";
 
 export interface AgentState {
   sessionId: string;

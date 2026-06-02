@@ -11,10 +11,10 @@ let mainWindow: BrowserWindow | null = null;
 
 async function createMainWindow() {
   mainWindow = new BrowserWindow({
-    width: 960,
-    height: 640,
-    minWidth: 800,
-    minHeight: 520,
+    width: 1440,
+    height: 900,
+    minWidth: 1280,
+    minHeight: 720,
     title: "Windhoox",
     webPreferences: {
       preload: path.join(__dirname, "../preload/preload.js"),
