@@ -1,4 +1,3 @@
-
 interface TestCaseCounterProps {
   counts: {
     pending: number;
@@ -17,14 +16,7 @@ const counters = [
 
 export function TestCaseCounter({ counts }: TestCaseCounterProps) {
   return (
-    <div
-      style={{
-        display: "grid",
-        gridTemplateColumns: "repeat(4, 1fr)",
-        gap: 8,
-        marginBottom: 16,
-      }}
-    >
+    <div className="wh-counter-row">
       {counters.map(({ key, label, colorClass }) => (
         <div key={key} className="wh-counter-card" data-testid={`counter-${key === "needsClarification" ? "clarification" : key}`}>
           <div className={`wh-counter-value ${colorClass}`}>

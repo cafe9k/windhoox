@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Card, Tag, Button, Space } from "antd";
+import { Button, Space } from "antd";
 import {
   CheckCircleOutlined,
   CloseCircleOutlined,
@@ -23,13 +23,13 @@ interface TestCaseCardProps {
   onStatusChange: (caseId: string, status: TestCase["status"]) => void;
 }
 
-const statusConfig: Record<TestCase["status"], { label: string; color: string }> = {
-  pending: { label: "待审核", color: "default" },
-  accepted: { label: "已接受", color: "success" },
-  rejected: { label: "已拒绝", color: "error" },
-  ask_product: { label: "询问产品", color: "warning" },
-  ask_engineering: { label: "询问工程", color: "warning" },
-  needs_context: { label: "需要上下文", color: "processing" },
+const statusConfig: Record<TestCase["status"], { label: string; dotClass: string }> = {
+  pending: { label: "待审核", dotClass: "wh-status-dot--default" },
+  accepted: { label: "已接受", dotClass: "wh-status-dot--success" },
+  rejected: { label: "已拒绝", dotClass: "wh-status-dot--error" },
+  ask_product: { label: "询问产品", dotClass: "wh-status-dot--warning" },
+  ask_engineering: { label: "询问工程", dotClass: "wh-status-dot--warning" },
+  needs_context: { label: "需要上下文", dotClass: "wh-status-dot--info" },
 };
 
 export function TestCaseCard({ testCase, onStatusChange }: TestCaseCardProps) {
@@ -37,39 +37,63 @@ export function TestCaseCard({ testCase, onStatusChange }: TestCaseCardProps) {
   const config = statusConfig[testCase.status];
 
   return (
-    <Card
+    <div
       data-testid="test-case-card"
-      size="small"
       className="wh-case-card"
-      styles={{ body: { padding: 0 } }}
+      style={{
+        marginBottom: 6,
+        border: "1px solid var(--border)",
+        borderRadius: "var(--radius-md)",
+        overflow: "hidden",
+        background: "var(--bg-main)",
+      }}
     >
       <div
         data-testid="case-header"
         onClick={() => setExpanded(!expanded)}
         className={`wh-case-header ${expanded ? "wh-case-header--expanded" : ""}`}
+        style={{
+          padding: "8px 12px",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          cursor: "pointer",
+          userSelect: "none",
+          borderBottom: expanded ? "1px solid var(--border)" : "1px solid transparent",
+        }}
       >
         <Space>
-          <span className="wh-case-title">{testCase.title}</span>
-          <Tag color={config.color} className="wh-status-tag">
+          <span
+            style={{
+              fontSize: 12,
+              fontWeight: 500,
+              color: "var(--text-primary)",
+              fontFamily: "var(--font-mono)",
+            }}
+          >
+            {testCase.title}
+          </span>
+          <span style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 11, color: "var(--text-muted)" }}>
+            <span className={`wh-status-dot ${config.dotClass}`} />
             {config.label}
-          </Tag>
+          </span>
         </Space>
         {expanded ? (
-          <CaretDownOutlined style={{ color: "var(--color-text-muted)" }} />
+          <CaretDownOutlined style={{ color: "var(--text-muted)", fontSize: 12 }} />
         ) : (
-          <CaretRightOutlined style={{ color: "var(--color-text-muted)" }} />
+          <CaretRightOutlined style={{ color: "var(--text-muted)", fontSize: 12 }} />
         )}
       </div>
 
       {expanded && (
-        <div className="wh-case-body">
-          <div className="wh-case-section">
+        <div style={{ padding: "10px 12px", background: "var(--bg-panel)" }}>
+          <div className="wh-case-section" style={{ marginBottom: 10 }}>
             <span className="wh-case-section-title">描述</span>
             <p className="wh-case-section-content">{testCase.description}</p>
           </div>
 
           {testCase.preconditions.length > 0 && (
-            <div className="wh-case-section">
+            <div className="wh-case-section" style={{ marginBottom: 10 }}>
               <span className="wh-case-section-title">前置条件</span>
               <ul className="wh-case-list">
                 {testCase.preconditions.map((pc, i) => (
@@ -80,7 +104,7 @@ export function TestCaseCard({ testCase, onStatusChange }: TestCaseCardProps) {
           )}
 
           {testCase.steps.length > 0 && (
-            <div className="wh-case-section">
+            <div className="wh-case-section" style={{ marginBottom: 10 }}>
               <span className="wh-case-section-title">步骤</span>
               <ol className="wh-case-list">
                 {testCase.steps.map((step, i) => (
@@ -90,7 +114,7 @@ export function TestCaseCard({ testCase, onStatusChange }: TestCaseCardProps) {
             </div>
           )}
 
-          <div className="wh-case-section">
+          <div className="wh-case-section" style={{ marginBottom: 10 }}>
             <span className="wh-case-section-title">预期结果</span>
             <p className="wh-case-section-content">{testCase.expectedResult}</p>
           </div>
@@ -125,6 +149,6 @@ export function TestCaseCard({ testCase, onStatusChange }: TestCaseCardProps) {
           </div>
         </div>
       )}
-    </Card>
+    </div>
   );
 }
