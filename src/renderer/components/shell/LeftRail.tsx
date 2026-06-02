@@ -4,7 +4,6 @@ import {
   ThunderboltOutlined,
   AppstoreOutlined,
   RocketOutlined,
-  MobileOutlined,
   SettingOutlined,
 } from "@ant-design/icons";
 import { Tooltip } from "antd";
@@ -29,7 +28,6 @@ const PRIMARY_ACTIONS = [
   { icon: <ThunderboltOutlined />, label: "技能",         key: "skills" },
   { icon: <AppstoreOutlined />,    label: "插件",         key: "plugins" },
   { icon: <RocketOutlined />,      label: "自动化",       key: "automation" },
-  { icon: <MobileOutlined />,      label: "Codex 移动版", key: "codex" },
 ];
 
 export function LeftRail({
