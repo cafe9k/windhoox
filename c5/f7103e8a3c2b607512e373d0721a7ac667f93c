@@ -1,0 +1,44 @@
+AGENTS.md
+  s_1d05c674ef3d5d::t_eb9b1deeadee29 4
+CLAUDE.md
+  s_1d05c674ef3d5d::t_eb9b1deeadee29 4
+src/renderer/features/workbench/AnalysisProgressCard.tsx
+  s_36d28f7af2b04e::t_5dacc23c4466e4 1,3-12,14-48,51-60,62-68,70-87,89-92,94-95,98-99,101-107,109-118,120-121,123,125-140,142-147,149-156,163-185,188-210,213-219,221-226,228-240,247,249-257,259-261,263-268,270-284,286-287,289-296,298-304
+src/renderer/styles/layout.css
+  s_36d28f7af2b04e::t_4632ba9def6202 311-477
+src/renderer/features/workbench/AgentConversationPanel.tsx
+  s_36d28f7af2b04e::t_b9d6e24fe42501 1
+  s_36d28f7af2b04e::t_d38425c6c30a46 102-104,107
+  s_36d28f7af2b04e::t_6da98f74f10e31 216-224
+  s_36d28f7af2b04e::t_296e44537dea7b 74-91,94
+  s_36d28f7af2b04e::t_cc20038de8e2a4 6
+src/renderer/features/workbench/WorkbenchLayout.tsx
+  s_36d28f7af2b04e::t_d6106d878dec6d 11-12,15,29
+src/renderer/features/workbench/WorkbenchPage.tsx
+  s_36d28f7af2b04e::t_7dd2da63cb8027 180-183
+  s_36d28f7af2b04e::t_d36e3f8c251115 84
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.10-trip",
+  "base_commit_sha": "c5f7103e8a3c2b607512e373d0721a7ac667f93c",
+  "prompts": {},
+  "sessions": {
+    "s_1d05c674ef3d5d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "54082f9b-08d8-4982-8223-d1d44afd963a",
+        "model": "qwen3.7-max"
+      },
+      "human_author": "qingqing.zhang <qingqing.zhang@trip.com>"
+    },
+    "s_36d28f7af2b04e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "1dbdf0b7-c650-4f07-86a2-4843ed95b549",
+        "model": "qwen3.7-max"
+      },
+      "human_author": "qingqing.zhang <qingqing.zhang@trip.com>"
+    }
+  }
+}
