@@ -1,0 +1,21 @@
+src/main/agent-handlers.ts
+  s_24b7a8841f3f88::t_f89d1c5a616a06 80,84-85,89
+src/main/schemas/windhooxAgentResult.ts
+  s_24b7a8841f3f88::t_8c974812ed0f09 85-90,95-100
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.10-trip",
+  "base_commit_sha": "1989f430f9e54a6af9e415f4eddb5d304f660404",
+  "prompts": {},
+  "sessions": {
+    "s_24b7a8841f3f88": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "cc0b97e8-cd98-4459-a5b7-f39676ca720a",
+        "model": "qwen3.7-max"
+      },
+      "human_author": "qingqing.zhang <qingqing.zhang@trip.com>"
+    }
+  }
+}
