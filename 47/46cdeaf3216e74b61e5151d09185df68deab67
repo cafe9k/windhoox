@@ -1,0 +1,26 @@
+scripts/update-core-flows.mjs
+  s_24b7a8841f3f88::t_8f0eadb2a0e91d 8-10,12,30,34,144-145,239-249,252-256
+AGENTS.md
+  s_24b7a8841f3f88::t_0fedefd7219f59 4
+CLAUDE.md
+  s_24b7a8841f3f88::t_0fedefd7219f59 4
+  s_24b7a8841f3f88::t_fd7562271ffee2 30,32,34-38,42
+docs/core-execution-flows.md
+  s_24b7a8841f3f88::t_84e22bddca0780 3,155
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.10-trip",
+  "base_commit_sha": "4746cdeaf3216e74b61e5151d09185df68deab67",
+  "prompts": {},
+  "sessions": {
+    "s_24b7a8841f3f88": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "cc0b97e8-cd98-4459-a5b7-f39676ca720a",
+        "model": "qwen3.7-max"
+      },
+      "human_author": "qingqing.zhang <qingqing.zhang@trip.com>"
+    }
+  }
+}
