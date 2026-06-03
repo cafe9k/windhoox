@@ -1,6 +1,5 @@
 import { Layout } from "antd";
 import { LeftOutlined, RightOutlined } from "@ant-design/icons";
-import { useState } from "react";
 
 const { Sider, Content } = Layout;
 
@@ -9,11 +8,11 @@ interface WorkbenchLayoutProps {
   center: React.ReactNode;
   right: React.ReactNode;
   topBar?: React.ReactNode;
+  rightCollapsed: boolean;
+  onRightCollapsedChange: (collapsed: boolean) => void;
 }
 
-export function WorkbenchLayout({ left, center, right, topBar }: WorkbenchLayoutProps) {
-  const [rightCollapsed, setRightCollapsed] = useState(true);
-
+export function WorkbenchLayout({ left, center, right, topBar, rightCollapsed, onRightCollapsedChange }: WorkbenchLayoutProps) {
   return (
     <div className="workbench-root">
       {topBar && <div className="workbench-topbar">{topBar}</div>}
@@ -27,7 +26,7 @@ export function WorkbenchLayout({ left, center, right, topBar }: WorkbenchLayout
         <div className="workbench-right-toggle">
           <button
             className="right-toggle-btn"
-            onClick={() => setRightCollapsed(!rightCollapsed)}
+            onClick={() => onRightCollapsedChange(!rightCollapsed)}
             title={rightCollapsed ? "展开测试资产池" : "折叠测试资产池"}
           >
             {rightCollapsed ? <LeftOutlined /> : <RightOutlined />}

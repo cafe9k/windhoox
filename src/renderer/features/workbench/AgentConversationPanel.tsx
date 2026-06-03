@@ -1,9 +1,9 @@
-import { Welcome, Prompts, Sender, Bubble, ThoughtChain } from "@ant-design/x";
+import { Welcome, Prompts, Sender, Bubble } from "@ant-design/x";
 import { FileTextOutlined, BulbOutlined, SearchOutlined, CheckSquareOutlined, ThunderboltOutlined } from "@ant-design/icons";
 import { useState, useMemo } from "react";
 import { Typography, Space } from "antd";
 import { eventToBubble, createUserBubble, createLoadingBubble } from "./eventToBubble";
-import { eventsToThoughtChain, createInitialThoughtChain } from "./eventToThoughtChain";
+import { AnalysisProgressCard } from "./AnalysisProgressCard";
 import type { AgentEvent } from "../../../types/agent";
 
 const { Text } = Typography;
@@ -71,8 +71,27 @@ interface AgentConversationPanelProps {
   sessionId?: string;
   events?: AgentEvent[];
   status?: SessionStatus;
+  cases?: Array<{
+    id: string;
+    title: string;
+    description: string;
+    preconditions: string[];
+    steps: string[];
+    expectedResult: string;
+    status: "pending" | "accepted" | "rejected" | "ask_product" | "ask_engineering" | "needs_context";
+  }>;
+  coverage?: Array<{
+    requirementId: string;
+    caseIds: string[];
+  }>;
+  questions?: Array<{
+    id: string;
+    category: "product" | "engineering" | "qa";
+    question: string;
+  }>;
   onSubmit?: (requirement: string) => void;
   onPromptClick?: (key: string) => void;
+  onViewDetails?: () => void;
 }
 
 export function AgentConversationPanel({
@@ -80,8 +99,12 @@ export function AgentConversationPanel({
   sessionId,
   events = [],
   status = "idle",
+  cases = [],
+  coverage = [],
+  questions = [],
   onSubmit,
   onPromptClick,
+  onViewDetails,
 }: AgentConversationPanelProps) {
   const [inputValue, setInputValue] = useState("");
 
@@ -121,17 +144,6 @@ export function AgentConversationPanel({
 
     return items.filter(Boolean);
   }, [events, requirement, sessionId, status]);
-
-  // Build thought chain items from events
-  const thoughtChainItems = useMemo(() => {
-    if (events.length === 0 && status === "idle") {
-      return null;
-    }
-    if (events.length === 0 && status === "running") {
-      return createInitialThoughtChain();
-    }
-    return eventsToThoughtChain(events);
-  }, [events, status]);
 
   // Idle state: show Welcome + Prompts
   if (status === "idle" && events.length === 0) {
@@ -201,20 +213,15 @@ export function AgentConversationPanel({
       </div>
 
       <div className="center-panel-body">
-        {/* ThoughtChain - execution stages */}
-        {thoughtChainItems && thoughtChainItems.length > 0 && (
-          <div style={{ marginBottom: 24 }}>
-            <ThoughtChain
-              items={thoughtChainItems.map((item) => ({
-                key: item.key,
-                title: item.title,
-                description: item.description,
-                status: item.status,
-                icon: item.icon,
-              }))}
-            />
-          </div>
-        )}
+        {/* Analysis Progress Card - wraps progress and summary */}
+        <AnalysisProgressCard
+          status={status}
+          events={events}
+          cases={cases}
+          coverage={coverage}
+          questions={questions}
+          onViewDetails={onViewDetails}
+        />
 
         {/* Bubble list - conversation flow */}
         <Bubble.List

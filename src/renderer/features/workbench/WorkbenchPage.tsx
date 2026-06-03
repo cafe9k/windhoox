@@ -81,6 +81,7 @@ export function WorkbenchPage() {
   const [agentState, dispatch] = useReducer(agentStateReducer, null as AgentState | null);
   const [events, setEvents] = useState<AgentEvent[]>([]);
   const [configModalOpen, setConfigModalOpen] = useState(false);
+  const [rightCollapsed, setRightCollapsed] = useState(true);
   const agentApi = (window as any).windhoox?.agent;
 
   // Subscribe to agent events
@@ -174,6 +175,10 @@ export function WorkbenchPage() {
     setSession(null);
     setEvents([]);
     dispatch({ type: "run_started", sessionId: "", taskId: "", timestamp: Date.now() } as any);
+  }, []);
+
+  const handleViewDetails = useCallback(() => {
+    setRightCollapsed(false);
   }, []);
 
   const handlePromptClick = useCallback(
