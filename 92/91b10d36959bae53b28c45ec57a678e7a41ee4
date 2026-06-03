@@ -1,0 +1,9 @@
+src/main/agent-handlers.ts
+  ai_agent 187
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.10-trip",
+  "base_commit_sha": "9291b10d36959bae53b28c45ec57a678e7a41ee4",
+  "prompts": {}
+}
