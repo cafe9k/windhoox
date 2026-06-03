@@ -1,0 +1,21 @@
+AGENTS.md
+  s_24b7a8841f3f88::t_7140bf0c1b075a 4
+CLAUDE.md
+  s_24b7a8841f3f88::t_7140bf0c1b075a 4
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.10-trip",
+  "base_commit_sha": "2085114e3860c41e94ea401d8a0ccdc7e4c6e379",
+  "prompts": {},
+  "sessions": {
+    "s_24b7a8841f3f88": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "cc0b97e8-cd98-4459-a5b7-f39676ca720a",
+        "model": "qwen3.7-max"
+      },
+      "human_author": "qingqing.zhang <qingqing.zhang@trip.com>"
+    }
+  }
+}
