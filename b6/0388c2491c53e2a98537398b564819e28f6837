@@ -1,0 +1,33 @@
+src/renderer/features/workbench/WorkbenchPage.tsx
+  s_0bd98b54aa98db::t_948a95cf28d31f 1-2
+  s_0bd98b54aa98db::t_4c4117b9e4e245 153
+src/renderer/features/workbench/AgentConversationPanel.tsx
+  s_0bd98b54aa98db::t_f8b5fd3eecbfbd 154-157
+  s_0bd98b54aa98db::t_a0967f8d99499f 7
+  s_0bd98b54aa98db::t_c11d880d417a69 211
+src/renderer/features/workbench/WorkbenchLayout.tsx
+  s_0bd98b54aa98db::t_e814ec00530d76 14
+src/renderer/App.test.tsx
+  s_0bd98b54aa98db::t_ca2795897189f4 21,24
+src/renderer/features/workbench/LeftContextPanel.tsx
+  s_0bd98b54aa98db::t_22f8d986ad592f 24
+  s_0bd98b54aa98db::t_b47fa3e9c16508 134-143
+  s_0bd98b54aa98db::t_3f122c8cb46182 2
+  s_0bd98b54aa98db::t_a5e551c8726f7f 67
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.10-trip",
+  "base_commit_sha": "b60388c2491c53e2a98537398b564819e28f6837",
+  "prompts": {},
+  "sessions": {
+    "s_0bd98b54aa98db": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4a409eba-a991-4b61-85f1-4f7f82a85a30",
+        "model": "qwen3.7-max"
+      },
+      "human_author": "qingqing.zhang <qingqing.zhang@trip.com>"
+    }
+  }
+}
