@@ -77,13 +77,16 @@ export function registerAgentHandlers(mainWindow: BrowserWindow | null) {
 
         // 4. 提取 JSON 结果
         const finalText = extractFinalText(finalMessage);
+        console.log("[agent-handlers] Raw response text (first 2000 chars):", finalText.slice(0, 2000));
         const extracted = extractResult(finalText);
 
         if (!extracted.success) {
+          const errDetail = extracted.error;
+          console.error("[agent-handlers] Extraction failed:", JSON.stringify(errDetail, null, 2));
           sendEvent(mainWindow, {
             type: "run_failed",
             sessionId,
-            error: `结果解析失败: ${extracted.error.message}`,
+            error: `结果解析失败: ${errDetail.message}`,
             recoverable: true,
             retryEligible: true,
             timestamp: Date.now(),

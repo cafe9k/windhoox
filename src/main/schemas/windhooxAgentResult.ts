@@ -82,12 +82,22 @@ const validationSchema = z.object({
 // ─── Root Schema ───
 
 export const windhooxAgentResultSchema = z.object({
-  pageUnderstanding: pageUnderstandingSchema,
+  pageUnderstanding: pageUnderstandingSchema.optional().default({
+    pageType: "unknown",
+    confidence: 0,
+    modules: [],
+    risks: [],
+  }),
   insights: z.array(insightSchema),
   questions: z.array(questionSchema),
   cases: z.array(caseSchema),
   coverage: z.array(coverageEntrySchema),
-  validation: validationSchema,
+  validation: validationSchema.optional().default({
+    passed: true,
+    score: 0,
+    missingCoverage: [],
+    duplicatedCases: [],
+  }),
 });
 
 export type WindhooxAgentResult = z.infer<typeof windhooxAgentResultSchema>;
