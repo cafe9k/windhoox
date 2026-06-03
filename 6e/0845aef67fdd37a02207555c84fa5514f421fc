@@ -1,0 +1,124 @@
+src/main/claude/runtime/types.ts
+  s_24b7a8841f3f88::t_b3dde7763c32d7 1-26,28-72
+  s_24b7a8841f3f88::t_ecb7f2a21c3aa1 27
+src/main/storage/ArtifactWriter.ts
+  s_24b7a8841f3f88::t_6e4b814403fa5c 1-19,22-190,199-226,239-246
+  s_24b7a8841f3f88::t_672a60f3227aca 227-238
+  s_24b7a8841f3f88::t_d123966cf96a14 20-21
+  s_24b7a8841f3f88::t_3cf510b6efedcd 191-198
+src/main/claude/runtime/ClaudeRuntime.ts
+  s_24b7a8841f3f88::t_15b674f561d074 1-23,25-167,169,172-182
+  s_24b7a8841f3f88::t_7af84f4fd7f423 24
+  s_24b7a8841f3f88::t_065bf8bf30f940 168,170-171
+src/main/claude/runtime/ClaudeRuntime.test.ts
+  s_24b7a8841f3f88::t_a581a613712b41 22,26-27,29
+  s_24b7a8841f3f88::t_629e431fb63df9 4-21,23-25,33-35
+  s_24b7a8841f3f88::t_250d73316ccab6 1-3,28,30-32,36-155
+src/types/agent.ts
+  s_24b7a8841f3f88::t_64e5a35546abaf 137
+  s_24b7a8841f3f88::t_2116e3efac506d 136,138-141
+AGENTS.md
+  s_24b7a8841f3f88::t_76bd9c0f3e4888 4
+src/main/schemas/windhooxAgentResult.test.ts
+  s_24b7a8841f3f88::t_ea8af739a21b4e 1-63
+src/main/agent-runner.ts
+  s_24b7a8841f3f88::t_90c34d50d60ad9 1-12
+src/main/config.test.ts
+  s_24b7a8841f3f88::t_504a45670545bb 110
+  s_24b7a8841f3f88::t_d377ad27f56e8a 189-194
+  s_24b7a8841f3f88::t_c42d3476f0fe63 69-72
+test-fixtures/claude/final-message-with-extra-text.md
+  s_24b7a8841f3f88::t_9bbff33d536781 1-59
+src/main/claude/runtime/ClaudeEventAdapter.test.ts
+  s_24b7a8841f3f88::t_45d0b9e3a6af0d 14-18
+test-fixtures/claude/final-message-with-code-fence.md
+  s_24b7a8841f3f88::t_90a5e85acc895d 1-63
+src/main/agent-handlers.test.ts
+  s_24b7a8841f3f88::t_91f2ad66062fbe 191
+  s_24b7a8841f3f88::t_83895555d66952 23-25,46-96,99-100,153-155,162,171,241,250-252,254,259,268-270,272-295
+  s_24b7a8841f3f88::t_c57b9b7b95e537 5-16,156-161,164-170
+  s_24b7a8841f3f88::t_ecbb086f5b4cf0 1-2,4,17-22,26-45,97-98,101-152,163,172-190,192-240,242-249,253,255-258,260-267,271,296-308
+  s_24b7a8841f3f88::t_a7e7d063615546 3
+src/main/claude/runtime/ClaudeResultExtractor.ts
+  s_24b7a8841f3f88::t_d2ab828730fc36 165
+  s_24b7a8841f3f88::t_0bc792c109383d 1
+  s_24b7a8841f3f88::t_6c25df2bf3d321 2-164,167-179
+  s_24b7a8841f3f88::t_3c5f09957479aa 166
+src/main/storage/SessionTypes.ts
+  s_24b7a8841f3f88::t_1e46ce6d477c6a 1-31
+src/renderer/features/workbench/WorkbenchPage.tsx
+  s_24b7a8841f3f88::t_39a96b34f7a90a 207-208
+  s_24b7a8841f3f88::t_c2ae44fb7d3db2 64
+src/main/storage/SessionStore.ts
+  s_24b7a8841f3f88::t_caa216c633a455 1-129
+src/main/storage/ArtifactWriter.test.ts
+  s_24b7a8841f3f88::t_0991ba652e2486 1-54,58-84,89-226
+  s_24b7a8841f3f88::t_8e883ffc18687e 55-57,85-88
+package.json
+  s_24b7a8841f3f88::t_af27444a44a539 31-32
+  s_24b7a8841f3f88::t_287371a2ad64b0 27
+src/main/claude/runtime/createClaudeRuntime.ts
+  s_24b7a8841f3f88::t_0f21d161b7bf34 18
+  s_24b7a8841f3f88::t_a0eeb166f63a84 1-17,19-26
+src/main/config.ts
+  s_24b7a8841f3f88::t_29dd9fa5730bf5 17
+  s_24b7a8841f3f88::t_fd425f4c2eab1d 16,18-21
+  s_24b7a8841f3f88::t_76d878b2a9caab 187-189
+  s_24b7a8841f3f88::t_faff463977af16 34,36-76
+  s_24b7a8841f3f88::t_dd1fbdd7b4b3c5 129-130
+  s_24b7a8841f3f88::t_1c62633a12cfec 35
+  s_24b7a8841f3f88::t_7a9044ec901ac5 109
+src/main/claude/runtime/index.ts
+  s_24b7a8841f3f88::t_1819d24a8c0203 1-10
+e2e/verify-analysis-flow.spec.ts
+  s_24b7a8841f3f88::t_6e6c518081c72e 32
+  s_24b7a8841f3f88::t_b0df755c7d8ae3 116
+  s_24b7a8841f3f88::t_ef2e9eebe1fb99 5-7,18,30-31,34-37,42,54-63,65,67-68,70-71,73,86,95,107-110,112-113,115,117-123,125-126,128-131,134-141
+  s_24b7a8841f3f88::t_fb2d1b08386f37 64
+test-fixtures/claude/invalid-final-result.json
+  s_24b7a8841f3f88::t_172073733e9b7d 1-20
+src/renderer/features/workbench/AIConfigModal.tsx
+  s_24b7a8841f3f88::t_165b3551abb58e 115-116,120,134-136,138
+  s_24b7a8841f3f88::t_d7d3eeec4304e8 2-3,6,9,11-14,36,38-41,61,63-66,85,100,106-108,113,142-143,146-186
+  s_24b7a8841f3f88::t_0a834ded33953e 62
+  s_24b7a8841f3f88::t_d8d306813d1b6d 10
+  s_24b7a8841f3f88::t_603eab90892e48 37
+src/main/storage/SessionStore.test.ts
+  s_24b7a8841f3f88::t_cc1b3493a29884 1-48,53-209
+  s_24b7a8841f3f88::t_39ad02002e1aae 49-52
+src/main/schemas/windhooxAgentResult.ts
+  s_24b7a8841f3f88::t_f7619ae38981fb 1-93
+src/main/agent-handlers.ts
+  s_24b7a8841f3f88::t_46c25f6efc52f8 94-121,126-129
+  s_24b7a8841f3f88::t_5d27a7c8d6d7b0 158-168
+  s_24b7a8841f3f88::t_686df3c676590f 29-30
+  s_24b7a8841f3f88::t_498a3755d1dbd7 19-21
+  s_24b7a8841f3f88::t_bdf89d98cc3061 8,11-18,23-28,31-32,40,42-46,48-71,73-93,122-125,130-135,138,141,143-144,146,150
+  s_24b7a8841f3f88::t_62d9e83dbb9c5a 35-37
+src/main/claude/runtime/ClaudeEventAdapter.ts
+  s_24b7a8841f3f88::t_98f41fe6c8609e 1-8,10-154
+  s_24b7a8841f3f88::t_a3ea9b9f7a07f8 9
+CLAUDE.md
+  s_24b7a8841f3f88::t_76bd9c0f3e4888 4
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.10-trip",
+  "base_commit_sha": "6e0845aef67fdd37a02207555c84fa5514f421fc",
+  "prompts": {},
+  "humans": {
+    "h_42daa5df821dff": {
+      "author": "qingqing.zhang <qingqing.zhang@trip.com>"
+    }
+  },
+  "sessions": {
+    "s_24b7a8841f3f88": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "cc0b97e8-cd98-4459-a5b7-f39676ca720a",
+        "model": "qwen3.7-max"
+      },
+      "human_author": "qingqing.zhang <qingqing.zhang@trip.com>"
+    }
+  }
+}
