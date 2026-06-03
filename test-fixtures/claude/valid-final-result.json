@@ -1,0 +1,121 @@
+{
+  "pageUnderstanding": {
+    "pageType": "list",
+    "businessDomain": "电商订单",
+    "confidence": 0.92,
+    "modules": [
+      {
+        "name": "订单列表",
+        "description": "展示用户所有订单，支持筛选和搜索",
+        "elements": ["订单编号", "商品名称", "订单金额", "订单状态", "操作按钮"]
+      },
+      {
+        "name": "筛选栏",
+        "description": "按订单状态和时间范围筛选",
+        "elements": ["状态筛选", "时间范围选择器", "搜索框"]
+      }
+    ],
+    "risks": [
+      {
+        "type": "边界条件",
+        "description": "空列表状态未明确交互",
+        "source": "需求文本"
+      },
+      {
+        "type": "性能",
+        "description": "大量订单时分页策略未说明",
+        "source": "页面结构"
+      }
+    ]
+  },
+  "insights": [
+    {
+      "businessRule": "订单状态流转为：待支付→已支付→已发货→已完成→已取消",
+      "risk": "状态回退规则不明确",
+      "evidence": "需求文档第3节",
+      "confidence": "high"
+    },
+    {
+      "businessRule": "订单金额包含优惠券折扣",
+      "evidence": "页面元素中存在优惠券标签",
+      "confidence": "medium"
+    },
+    {
+      "risk": "取消订单后是否释放库存未说明",
+      "confidence": "low"
+    }
+  ],
+  "questions": [
+    {
+      "id": "q-001",
+      "category": "product",
+      "question": "订单超过30天未支付是否自动取消？"
+    },
+    {
+      "id": "q-002",
+      "category": "engineering",
+      "question": "列表接口是否支持服务端分页？最大页大小是多少？"
+    },
+    {
+      "id": "q-003",
+      "category": "qa",
+      "question": "已发货状态的订单是否允许取消？"
+    }
+  ],
+  "cases": [
+    {
+      "id": "TC-001",
+      "title": "正常展示订单列表",
+      "description": "用户进入订单列表页，应看到所有订单按时间倒序排列",
+      "preconditions": ["用户已登录", "用户有至少3个订单"],
+      "steps": ["打开订单列表页", "查看订单排列顺序"],
+      "expectedResult": "订单按创建时间倒序展示，最新订单在最上方",
+      "priority": "P0",
+      "caseType": "功能验证",
+      "tags": ["列表", "排序"]
+    },
+    {
+      "id": "TC-002",
+      "title": "按状态筛选订单",
+      "description": "用户选择特定状态筛选，只展示对应状态的订单",
+      "preconditions": ["用户已登录", "存在不同状态的订单"],
+      "steps": ["点击状态筛选", "选择\"已支付\"", "查看筛选结果"],
+      "expectedResult": "只展示状态为\"已支付\"的订单",
+      "priority": "P1",
+      "caseType": "功能验证",
+      "tags": ["筛选"]
+    },
+    {
+      "id": "TC-003",
+      "title": "空列表状态展示",
+      "description": "用户无订单时，列表应展示空状态提示",
+      "preconditions": ["用户已登录", "用户无任何订单"],
+      "steps": ["打开订单列表页"],
+      "expectedResult": "展示空状态插图和引导文案",
+      "priority": "P1",
+      "caseType": "边界条件",
+      "tags": ["空状态"]
+    }
+  ],
+  "coverage": [
+    {
+      "requirementId": "q-001",
+      "caseIds": ["TC-001", "TC-003"]
+    },
+    {
+      "requirementId": "q-002",
+      "caseIds": ["TC-002"]
+    }
+  ],
+  "validation": {
+    "passed": true,
+    "score": 85,
+    "missingCoverage": [
+      {
+        "requirementId": "q-003",
+        "reason": "已发货取消场景未覆盖"
+      }
+    ],
+    "duplicatedCases": []
+  }
+}

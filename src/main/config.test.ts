@@ -19,7 +19,7 @@ const {
   getConfigMasked,
   isConfigReady,
   resetConfigCache,
-} = await import("./config");
+} = await import("./config.js");
 
 describe("config", () => {
   const envLocalPath = path.join(process.cwd(), ".env.local");
@@ -28,15 +28,12 @@ describe("config", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    // Reset module-level config cache
     resetConfigCache();
-    // Clean up test files — force: true avoids ENOENT errors
     fs.rmSync(configPath, { force: true });
     fs.rmSync(envLocalPath, { force: true });
   });
 
   afterEach(() => {
-    // Clean up test files
     fs.rmSync(configPath, { force: true });
     fs.rmSync(envLocalPath, { force: true });
     try { fs.rmdirSync(mockUserData, { recursive: true }); } catch { /* ignore */ }
@@ -53,151 +50,174 @@ describe("config", () => {
 
   describe("loadEnvLocal", () => {
     it("returns empty object when .env.local does not exist", () => {
-      // .env.local cleaned up in beforeEach
       const config = getConfig();
-      expect(config.deepseekApiKey).toBe("");
+      expect(config.anthropicApiKey).toBe("");
     });
 
-    it("reads DEEPSEEK_API_KEY from .env.local", () => {
-      writeEnvLocal("DEEPSEEK_API_KEY=sk-test-key-123\n");
+    it("reads CLAUDE_API_KEY from .env.local", () => {
+      writeEnvLocal("CLAUDE_API_KEY=sk-ant-test-key-123\n");
       const config = getConfig();
-      expect(config.deepseekApiKey).toBe("sk-test-key-123");
+      expect(config.anthropicApiKey).toBe("sk-ant-test-key-123");
     });
 
-    it("reads all three env variables", () => {
-      writeEnvLocal(
-        "DEEPSEEK_API_KEY=sk-key\nDEEPSEEK_BASE_URL=https://custom.api.com\nDEEPSEEK_MODEL=deepseek-chat\n",
-      );
+    it("reads CLAUDE_MODEL from .env.local", () => {
+      writeEnvLocal("CLAUDE_MODEL=claude-sonnet-4-5\n");
       const config = getConfig();
-      expect(config.deepseekApiKey).toBe("sk-key");
-      expect(config.deepseekBaseUrl).toBe("https://custom.api.com");
-      expect(config.deepseekModel).toBe("deepseek-chat");
+      expect(config.model).toBe("claude-sonnet-4-5");
+    });
+
+    it("reads CLAUDE_BASE_URL from .env.local", () => {
+      writeEnvLocal("CLAUDE_API_KEY=sk-test\nCLAUDE_BASE_URL=https://api.deepseek.com/anthropic\n");
+      const config = getConfig();
+      expect(config.baseURL).toBe("https://api.deepseek.com/anthropic");
     });
 
     it("ignores comments and empty lines", () => {
       writeEnvLocal(`# This is a comment
-DEEPSEEK_API_KEY=sk-valid
+CLAUDE_API_KEY=sk-ant-valid
 
 # Another comment
-DEEPSEEK_MODEL=deepseek-chat
+CLAUDE_MODEL=claude-sonnet-4-5
 `);
       const config = getConfig();
-      expect(config.deepseekApiKey).toBe("sk-valid");
-      expect(config.deepseekModel).toBe("deepseek-chat");
+      expect(config.anthropicApiKey).toBe("sk-ant-valid");
+      expect(config.model).toBe("claude-sonnet-4-5");
     });
 
     it("strips surrounding quotes from values", () => {
-      writeEnvLocal('DEEPSEEK_API_KEY="sk-quoted-key"\n');
+      writeEnvLocal('CLAUDE_API_KEY="sk-ant-quoted-key"\n');
       const config = getConfig();
-      expect(config.deepseekApiKey).toBe("sk-quoted-key");
+      expect(config.anthropicApiKey).toBe("sk-ant-quoted-key");
     });
 
     it("ignores unrelated env vars", () => {
-      writeEnvLocal("OTHER_VAR=value\nDEEPSEEK_API_KEY=sk-key\nFOO=bar\n");
+      writeEnvLocal("OTHER_VAR=value\nCLAUDE_API_KEY=sk-ant-key\nFOO=bar\n");
       const config = getConfig();
-      expect(config.deepseekApiKey).toBe("sk-key");
+      expect(config.anthropicApiKey).toBe("sk-ant-key");
+    });
+
+    it("ignores old DeepSeek env variables", () => {
+      writeEnvLocal("DEEPSEEK_API_KEY=sk-deepseek\nDEEPSEEK_BASE_URL=https://deepseek.com\n");
+      const config = getConfig();
+      expect(config.anthropicApiKey).toBe("");
     });
   });
 
   describe("config priority", () => {
     it("uses defaults when no config exists", () => {
       const config = getConfig();
-      expect(config.deepseekApiKey).toBe("");
-      expect(config.deepseekBaseUrl).toBe("https://api.deepseek.com");
-      expect(config.deepseekModel).toBe("deepseek-reasoner");
+      expect(config.anthropicApiKey).toBe("");
+      expect(config.baseURL).toBe("");
+      expect(config.model).toBe("claude-sonnet-4-5");
+      expect(config.systemPrompt).toContain("QA engineer");
+      expect(config.maxTokens).toBe(8000);
+      expect(config.temperature).toBe(0.3);
     });
 
     it("persisted config overrides defaults", () => {
-      writeConfigFile({ deepseekApiKey: "sk-persisted", deepseekModel: "deepseek-chat" });
+      writeConfigFile({ anthropicApiKey: "sk-ant-persisted", model: "claude-opus-4-5" });
       const config = getConfig();
-      expect(config.deepseekApiKey).toBe("sk-persisted");
-      expect(config.deepseekModel).toBe("deepseek-chat");
-      expect(config.deepseekBaseUrl).toBe("https://api.deepseek.com"); // default
+      expect(config.anthropicApiKey).toBe("sk-ant-persisted");
+      expect(config.model).toBe("claude-opus-4-5");
+      expect(config.maxTokens).toBe(8000); // default
     });
 
     it("env variables take precedence over persisted config", () => {
-      writeConfigFile({ deepseekApiKey: "sk-persisted", deepseekModel: "deepseek-chat" });
-      writeEnvLocal("DEEPSEEK_API_KEY=sk-from-env\n");
+      writeConfigFile({ anthropicApiKey: "sk-ant-persisted", model: "claude-opus-4-5" });
+      writeEnvLocal("CLAUDE_API_KEY=sk-ant-from-env\n");
       const config = getConfig();
-      expect(config.deepseekApiKey).toBe("sk-from-env");
-      expect(config.deepseekModel).toBe("deepseek-chat"); // from persisted
+      expect(config.anthropicApiKey).toBe("sk-ant-from-env");
+      expect(config.model).toBe("claude-opus-4-5"); // from persisted
     });
   });
 
   describe("getConfigWithSources", () => {
     it("marks env-sourced fields correctly", () => {
-      writeEnvLocal("DEEPSEEK_API_KEY=sk-env-key\n");
-      writeConfigFile({ deepseekApiKey: "sk-persisted" }); // env should win
+      writeEnvLocal("CLAUDE_API_KEY=sk-ant-env-key\n");
+      writeConfigFile({ anthropicApiKey: "sk-ant-persisted" });
       const config = getConfigWithSources();
-      expect(config._sources.deepseekApiKey.key).toBe("env");
-      expect(config._sources.deepseekApiKey.label).toBe(".env.local");
+      expect(config._sources.anthropicApiKey.key).toBe("env");
+      expect(config._sources.anthropicApiKey.label).toBe(".env.local");
     });
 
     it("marks disk-sourced fields correctly", () => {
-      writeConfigFile({ deepseekApiKey: "sk-persisted" });
+      writeConfigFile({ anthropicApiKey: "sk-ant-persisted" });
       const config = getConfigWithSources();
-      expect(config._sources.deepseekApiKey.key).toBe("disk");
-      expect(config._sources.deepseekApiKey.label).toBe("已保存");
+      expect(config._sources.anthropicApiKey.key).toBe("disk");
+      expect(config._sources.anthropicApiKey.label).toBe("已保存");
     });
 
     it("marks default fields correctly", () => {
-      // No env, no persisted config
       const config = getConfigWithSources();
-      expect(config._sources.deepseekApiKey.key).toBe("default");
-      expect(config._sources.deepseekBaseUrl.key).toBe("default");
+      expect(config._sources.anthropicApiKey.key).toBe("default");
+      expect(config._sources.model.key).toBe("default");
     });
 
     it("tracks source per field independently", () => {
-      writeEnvLocal("DEEPSEEK_API_KEY=sk-env\n");
-      writeConfigFile({ deepseekBaseUrl: "https://custom.com" });
+      writeEnvLocal("CLAUDE_API_KEY=sk-ant-env\n");
+      writeConfigFile({ model: "claude-opus-4-5" });
       const config = getConfigWithSources();
-      expect(config._sources.deepseekApiKey.key).toBe("env");
-      expect(config._sources.deepseekBaseUrl.key).toBe("disk");
-      expect(config._sources.deepseekModel.key).toBe("default");
+      expect(config._sources.anthropicApiKey.key).toBe("env");
+      expect(config._sources.model.key).toBe("disk");
+      expect(config._sources.systemPrompt.key).toBe("default");
     });
   });
 
   describe("setConfig", () => {
     it("saves config to disk", () => {
-      setConfig({ deepseekApiKey: "sk-new", deepseekBaseUrl: "https://new.com" });
+      setConfig({ anthropicApiKey: "sk-ant-new", model: "claude-sonnet-4-5" });
       expect(fs.existsSync(configPath)).toBe(true);
       const saved = JSON.parse(fs.readFileSync(configPath, "utf-8"));
-      expect(saved.deepseekApiKey).toBe("sk-new");
-      expect(saved.deepseekBaseUrl).toBe("https://new.com");
+      expect(saved.anthropicApiKey).toBe("sk-ant-new");
+      expect(saved.model).toBe("claude-sonnet-4-5");
     });
 
     it("preserves existing fields when partially updating", () => {
-      setConfig({ deepseekApiKey: "sk-first", deepseekModel: "deepseek-chat" });
-      setConfig({ deepseekApiKey: "sk-second" });
+      setConfig({ anthropicApiKey: "sk-ant-first", model: "claude-opus-4-5" });
+      setConfig({ anthropicApiKey: "sk-ant-second" });
       const saved = JSON.parse(fs.readFileSync(configPath, "utf-8"));
-      expect(saved.deepseekApiKey).toBe("sk-second");
-      expect(saved.deepseekModel).toBe("deepseek-chat");
+      expect(saved.anthropicApiKey).toBe("sk-ant-second");
+      expect(saved.model).toBe("claude-opus-4-5");
     });
 
     it("returns updated config", () => {
-      const result = setConfig({ deepseekApiKey: "sk-test" });
-      expect(result.deepseekApiKey).toBe("sk-test");
-      expect(result.deepseekBaseUrl).toBe("https://api.deepseek.com");
+      const result = setConfig({ anthropicApiKey: "sk-ant-test" });
+      expect(result.anthropicApiKey).toBe("sk-ant-test");
+      expect(result.model).toBe("claude-sonnet-4-5");
+    });
+
+    it("saves baseURL to disk", () => {
+      setConfig({ anthropicApiKey: "sk-ant-new", baseURL: "https://api.deepseek.com/anthropic" });
+      const saved = JSON.parse(fs.readFileSync(configPath, "utf-8"));
+      expect(saved.baseURL).toBe("https://api.deepseek.com/anthropic");
+    });
+
+    it("does not write deepseek fields", () => {
+      setConfig({ anthropicApiKey: "sk-ant-test" });
+      const saved = JSON.parse(fs.readFileSync(configPath, "utf-8"));
+      expect(saved).not.toHaveProperty("deepseekApiKey");
+      expect(saved).not.toHaveProperty("deepseekBaseUrl");
+      expect(saved).not.toHaveProperty("deepseekModel");
     });
   });
 
   describe("getConfigMasked", () => {
     it("masks API key with first 4 and last 4 chars", () => {
-      writeConfigFile({ deepseekApiKey: "sk-abcdefghijklmnopqrstuvwxyz" });
+      writeConfigFile({ anthropicApiKey: "sk-ant-abcdefghijklmnopqrstuvwxyz" });
       const masked = getConfigMasked();
-      expect(masked.deepseekApiKey).toBe("sk-a****wxyz");
+      expect(masked.anthropicApiKey).toBe("sk-a****wxyz");
     });
 
     it("returns empty string when no key is set", () => {
       const masked = getConfigMasked();
-      expect(masked.deepseekApiKey).toBe("");
+      expect(masked.anthropicApiKey).toBe("");
     });
 
     it("includes source information", () => {
-      writeConfigFile({ deepseekApiKey: "sk-test" });
+      writeConfigFile({ anthropicApiKey: "sk-ant-test" });
       const masked = getConfigMasked();
       expect(masked._sources).toBeDefined();
-      expect(masked._sources.deepseekApiKey.key).toBe("disk");
+      expect(masked._sources.anthropicApiKey.key).toBe("disk");
     });
   });
 
@@ -206,13 +226,13 @@ DEEPSEEK_MODEL=deepseek-chat
       expect(isConfigReady()).toBe(false);
     });
 
-    it("returns false when baseUrl is empty", () => {
-      writeConfigFile({ deepseekApiKey: "sk-test", deepseekBaseUrl: "" });
+    it("returns false when model is empty", () => {
+      writeConfigFile({ anthropicApiKey: "sk-ant-test", model: "" });
       expect(isConfigReady()).toBe(false);
     });
 
-    it("returns true when both key and baseUrl are set", () => {
-      writeConfigFile({ deepseekApiKey: "sk-test", deepseekBaseUrl: "https://api.deepseek.com" });
+    it("returns true when both key and model are set", () => {
+      writeConfigFile({ anthropicApiKey: "sk-ant-test", model: "claude-sonnet-4-5" });
       expect(isConfigReady()).toBe(true);
     });
   });

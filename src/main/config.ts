@@ -13,9 +13,12 @@ import { app } from "electron";
 const _configDirname = path.dirname(fileURLToPath(import.meta.url));
 
 export interface AppConfig {
-  deepseekApiKey: string;
-  deepseekBaseUrl: string;
-  deepseekModel: string;
+  anthropicApiKey: string;
+  baseURL: string;
+  model: string;
+  systemPrompt: string;
+  maxTokens: number;
+  temperature: number;
 }
 
 export interface ConfigSource {
@@ -28,9 +31,49 @@ export type ConfigWithSources = AppConfig & {
 };
 
 const DEFAULT_CONFIG: AppConfig = {
-  deepseekApiKey: "",
-  deepseekBaseUrl: "https://api.deepseek.com",
-  deepseekModel: "deepseek-reasoner",
+  anthropicApiKey: "",
+  baseURL: "",
+  model: "claude-sonnet-4-5",
+  systemPrompt: `You are a senior QA engineer and test architect. Analyze the user's requirements and generate a comprehensive test design in JSON format.
+
+Your output must follow this exact structure:
+{
+  "insights": [
+    {
+      "businessRule": "description of the business rule",
+      "risk": "potential risk if not tested",
+      "evidence": "evidence from requirements",
+      "confidence": "high|medium|low"
+    }
+  ],
+  "questions": [
+    {
+      "id": "q-001",
+      "category": "product|engineering|qa",
+      "question": "clarification question"
+    }
+  ],
+  "cases": [
+    {
+      "id": "TC-001",
+      "title": "test case title",
+      "description": "what this test verifies",
+      "preconditions": ["precondition 1"],
+      "steps": ["step 1", "step 2"],
+      "expectedResult": "expected outcome"
+    }
+  ],
+  "coverage": [
+    {
+      "requirementId": "req-001",
+      "caseIds": ["TC-001", "TC-002"]
+    }
+  ]
+}
+
+Generate thorough test cases covering happy paths, edge cases, error scenarios, and boundary conditions.`,
+  maxTokens: 8000,
+  temperature: 0.3,
 };
 
 let _config: AppConfig | null = null;
@@ -52,21 +95,18 @@ function ensurePaths(): void {
 }
 
 /**
- * Load .env.local file and extract DEEPSEEK_API_KEY if present.
+ * Load .env.local file and extract CLAUDE_API_KEY if present.
  */
 function loadEnvLocal(): Partial<AppConfig> {
-  // Try multiple locations: cwd (for CLI/scripts), relative to this file (for Electron),
-  // and app root (for packaged Electron)
   const candidates = [
     path.join(process.cwd(), ".env.local"),
     path.join(_configDirname, "../../.env.local"),
   ];
 
-  // In Electron, also try app path
   try {
     candidates.push(path.join(app.getAppPath(), ".env.local"));
   } catch {
-    // app not ready yet — skip
+    // app not ready yet
   }
 
   const result: Partial<AppConfig> = {};
@@ -84,18 +124,23 @@ function loadEnvLocal(): Partial<AppConfig> {
         const key = trimmed.slice(0, eqIdx).trim();
         const value = trimmed.slice(eqIdx + 1).trim().replace(/^["']|["']$/g, "");
 
-        if (key === "DEEPSEEK_API_KEY") {
-          result.deepseekApiKey = value;
-        } else if (key === "DEEPSEEK_BASE_URL") {
-          result.deepseekBaseUrl = value;
-        } else if (key === "DEEPSEEK_MODEL") {
-          result.deepseekModel = value;
+        if (key === "CLAUDE_API_KEY") {
+          result.anthropicApiKey = value;
+        } else if (key === "CLAUDE_BASE_URL") {
+          result.baseURL = value;
+        } else if (key === "CLAUDE_MODEL") {
+          result.model = value;
+        } else if (key === "CLAUDE_SYSTEM_PROMPT") {
+          result.systemPrompt = value;
+        } else if (key === "CLAUDE_MAX_TOKENS") {
+          result.maxTokens = parseInt(value, 10);
+        } else if (key === "CLAUDE_TEMPERATURE") {
+          result.temperature = parseFloat(value);
         }
       }
-      // Found and parsed — stop here
-      if (result.deepseekApiKey) break;
+      if (result.anthropicApiKey) break;
     } catch {
-      // File doesn't exist at this location — try next
+      // file doesn't exist at this location
     }
   }
 
@@ -136,15 +181,24 @@ function buildSources(
   const defaultSource: ConfigSource = { key: "default", label: "默认值" };
 
   return {
-    deepseekApiKey: fromEnv.deepseekApiKey
+    anthropicApiKey: fromEnv.anthropicApiKey
       ? envSource
-      : (fromDisk.hasFile && "deepseekApiKey" in fromDisk.raw ? diskSource : defaultSource),
-    deepseekBaseUrl: fromEnv.deepseekBaseUrl
+      : (fromDisk.hasFile && "anthropicApiKey" in fromDisk.raw ? diskSource : defaultSource),
+    baseURL: fromEnv.baseURL
       ? envSource
-      : (fromDisk.hasFile && "deepseekBaseUrl" in fromDisk.raw ? diskSource : defaultSource),
-    deepseekModel: fromEnv.deepseekModel
+      : (fromDisk.hasFile && "baseURL" in fromDisk.raw ? diskSource : defaultSource),
+    model: fromEnv.model
       ? envSource
-      : (fromDisk.hasFile && "deepseekModel" in fromDisk.raw ? diskSource : defaultSource),
+      : (fromDisk.hasFile && "model" in fromDisk.raw ? diskSource : defaultSource),
+    systemPrompt: fromEnv.systemPrompt
+      ? envSource
+      : (fromDisk.hasFile && "systemPrompt" in fromDisk.raw ? diskSource : defaultSource),
+    maxTokens: fromEnv.maxTokens
+      ? envSource
+      : (fromDisk.hasFile && "maxTokens" in fromDisk.raw ? diskSource : defaultSource),
+    temperature: fromEnv.temperature
+      ? envSource
+      : (fromDisk.hasFile && "temperature" in fromDisk.raw ? diskSource : defaultSource),
   };
 }
 
@@ -158,7 +212,6 @@ export function getConfig(): AppConfig {
   const { config: fromDisk } = loadFromDisk();
   const fromEnv = loadEnvLocal();
 
-  // .env.local takes precedence in development
   _config = {
     ...DEFAULT_CONFIG,
     ...fromDisk,
@@ -189,7 +242,6 @@ export function setConfig(updates: Partial<AppConfig>): AppConfig {
   const current = getConfig();
   _config = { ...current, ...updates };
   saveToDisk(_config);
-  // Reset sources so next load recalculates
   _sources = null;
   _config = null;
   return getConfig();
@@ -199,11 +251,11 @@ export function setConfig(updates: Partial<AppConfig>): AppConfig {
  * Get config with API key masked (for UI display).
  * Includes source information.
  */
-export function getConfigMasked(): Omit<ConfigWithSources, "deepseekApiKey"> & { deepseekApiKey: string } {
+export function getConfigMasked(): Omit<ConfigWithSources, "anthropicApiKey"> & { anthropicApiKey: string } {
   const config = getConfigWithSources();
-  const key = config.deepseekApiKey;
+  const key = config.anthropicApiKey;
   const masked = key ? `${key.slice(0, 4)}****${key.slice(-4)}` : "";
-  return { ...config, deepseekApiKey: masked };
+  return { ...config, anthropicApiKey: masked };
 }
 
 /**
@@ -211,7 +263,7 @@ export function getConfigMasked(): Omit<ConfigWithSources, "deepseekApiKey"> & {
  */
 export function isConfigReady(): boolean {
   const config = getConfig();
-  return Boolean(config.deepseekApiKey && config.deepseekBaseUrl);
+  return Boolean(config.anthropicApiKey && config.model);
 }
 
 /**

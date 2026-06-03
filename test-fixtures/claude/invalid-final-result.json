@@ -1,0 +1,20 @@
+{
+  "pageUnderstanding": {
+    "pageType": "list",
+    "confidence": "not-a-number"
+  },
+  "insights": [
+    {
+      "confidence": "invalid-enum-value"
+    }
+  ],
+  "questions": "this-should-be-an-array",
+  "cases": [
+    {
+      "id": "TC-001",
+      "title": "Missing required fields"
+    }
+  ],
+  "coverage": null,
+  "extraField": "should not be here"
+}

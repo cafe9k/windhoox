@@ -24,10 +24,12 @@
   "dependencies": {
     "@ant-design/icons": "^6.2.5",
     "@ant-design/x": "^2.7.0",
+    "@anthropic-ai/sdk": "^0.100.1",
     "antd": "^6.4.3",
     "electron-updater": "^6.8.3",
     "react": "latest",
-    "react-dom": "latest"
+    "react-dom": "latest",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@playwright/test": "^1.60.0",

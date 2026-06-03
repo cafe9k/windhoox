@@ -2,9 +2,9 @@
  * E2E test: verify the "start analysis" flow works end-to-end.
  *
  * Tests:
- * 1. Input box has default requirement pre-filled
- * 2. Clicking "开始分析" shows "分析进行中..." loading state
- * 3. After API returns, insights and test cases appear
+ * 1. Welcome screen shows with prompts
+ * 2. Clicking "Demo 演示" fills the input with demo requirement
+ * 3. Submitting via Sender shows loading then results
  * 4. Failed state shows error message (if API key invalid)
  */
 
@@ -15,7 +15,7 @@ import path from "node:path";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 test.describe("Analysis Flow", () => {
-  test("default requirement is pre-filled", async () => {
+  test("welcome screen shows with prompts", async () => {
     const electronApp = await electron.launch({
       args: ["."],
       env: {
@@ -27,17 +27,19 @@ test.describe("Analysis Flow", () => {
     const page = await electronApp.firstWindow();
     await page.waitForLoadState("domcontentloaded");
 
-    // Check textarea has default requirement (> 200 chars)
-    const textarea = page.locator('[data-testid="requirement-input"]');
-    await expect(textarea).toBeVisible();
-    const value = await textarea.inputValue();
-    expect(value.length).toBeGreaterThan(200);
-    expect(value).toContain("退货");
+    // Check welcome screen is visible
+    await expect(page.locator("text=开始一次测试设计任务")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "快捷任务" })).toBeVisible();
+
+    // Check prompts are visible
+    await expect(page.locator("text=粘贴需求生成用例")).toBeVisible();
+    await expect(page.locator("text=基于本地资料分析")).toBeVisible();
+    await expect(page.locator("text=Demo 演示")).toBeVisible();
 
     await electronApp.close();
   });
 
-  test("clicking start analysis shows loading then results", async () => {
+  test("clicking Demo fills input and submitting shows loading then results", async () => {
     const electronApp = await electron.launch({
       args: ["."],
       env: {
@@ -49,18 +51,26 @@ test.describe("Analysis Flow", () => {
     const page = await electronApp.firstWindow();
     await page.waitForLoadState("domcontentloaded");
 
-    // 1. Check initial state: "开始分析" button is enabled (default requirement present)
-    const startBtn = page.locator('[data-testid="start-button"]');
-    await expect(startBtn).toBeVisible();
-    await expect(startBtn).not.toBeDisabled();
+    // 1. Click "Demo 演示" prompt
+    const demoPrompt = page.locator("text=Demo 演示");
+    await expect(demoPrompt).toBeVisible();
+    await demoPrompt.click();
 
-    // 2. Click "开始分析"
-    await startBtn.click();
+    // 2. Wait a bit for input to be filled
+    await page.waitForTimeout(500);
 
-    // 3. Should show loading state "分析进行中..."
-    await expect(page.locator("text=分析进行中...")).toBeVisible({ timeout: 5000 });
+    // 3. Submit via Sender (press Enter or click send button)
+    // Sender component has a textarea and send button
+    const textarea = page.getByRole("textbox", { name: "输入需求描述" });
+    await expect(textarea).toBeVisible();
 
-    // 4. Wait for either success or failure
+    // Press Enter to submit
+    await textarea.press("Enter");
+
+    // 4. Should show loading state "分析中..." or "正在处理..."
+    await expect(page.locator("text=分析中...").or(page.locator("text=正在处理..."))).toBeVisible({ timeout: 5000 });
+
+    // 5. Wait for either success or failure
     // The API call takes ~20s, so we wait up to 60s
     const completed = page.locator("text=分析完成");
     const failed = page.locator("text=分析失败");
@@ -70,21 +80,10 @@ test.describe("Analysis Flow", () => {
     // Take screenshot of result
     await page.screenshot({ path: "e2e-result.png" });
 
-    // If successful, verify insights and test cases appear
-    const hasInsights = await page.locator('[data-testid="insight-card"]').count() > 0;
-    const hasCases = await page.locator('[data-testid="test-case-card"]').count() > 0;
-
-    if (hasInsights) {
-      console.log(`✅ Found ${await page.locator('[data-testid="insight-card"]').count()} insight cards`);
-    }
-    if (hasCases) {
-      console.log(`✅ Found ${await page.locator('[data-testid="test-case-card"]').count()} test case cards`);
-    }
-
     // Verify either success or failure is properly displayed
     const isFailed = await failed.isVisible().catch(() => false);
     if (isFailed) {
-      const errorText = await page.locator("text=/DeepSeek API key|error|Error|失败/").first().textContent();
+      const errorText = await page.locator("text=/API|error|Error|失败/").first().textContent();
       console.log(`⚠️ Analysis failed with: ${errorText}`);
     } else {
       console.log("✅ Analysis completed successfully");
@@ -93,7 +92,7 @@ test.describe("Analysis Flow", () => {
     await electronApp.close();
   });
 
-  test("demo data loads correctly", async () => {
+  test("demo data loads correctly via prompt click", async () => {
     const electronApp = await electron.launch({
       args: ["."],
       env: {
@@ -105,25 +104,41 @@ test.describe("Analysis Flow", () => {
     const page = await electronApp.firstWindow();
     await page.waitForLoadState("domcontentloaded");
 
-    // Click "加载演示任务" button
-    const demoBtn = page.locator("text=加载演示任务");
-    await expect(demoBtn).toBeVisible();
-    await demoBtn.click();
+    // Click "Demo 演示" prompt
+    const demoPrompt = page.locator("text=Demo 演示");
+    await expect(demoPrompt).toBeVisible();
+    await demoPrompt.click();
 
-    // Should show insights immediately
-    await expect(page.locator('[data-testid="insight-card"]').first()).toBeVisible({ timeout: 5000 });
+    // Wait a bit for input to be filled
+    await page.waitForTimeout(500);
 
-    // Should show test cases
-    await expect(page.locator('[data-testid="test-case-card"]').first()).toBeVisible({ timeout: 5000 });
+    // Verify textarea has content
+    const textarea = page.getByRole("textbox", { name: "输入需求描述" });
+    await expect(textarea).toBeVisible();
+    const value = await textarea.inputValue();
+    expect(value.length).toBeGreaterThan(100);
+    expect(value).toContain("支付");
 
-    const insightCount = await page.locator('[data-testid="insight-card"]').count();
-    const caseCount = await page.locator('[data-testid="test-case-card"]').count();
+    // Submit
+    await textarea.press("Enter");
 
-    console.log(`✅ Demo: ${insightCount} insights, ${caseCount} test cases`);
-    expect(insightCount).toBeGreaterThan(0);
-    expect(caseCount).toBeGreaterThan(0);
+    // Should show loading
+    await expect(page.locator("text=分析中...").or(page.locator("text=正在处理..."))).toBeVisible({ timeout: 5000 });
+
+    // Wait for result
+    const completed = page.locator("text=分析完成");
+    const failed = page.locator("text=分析失败");
+    await expect(completed.or(failed)).toBeVisible({ timeout: 60000 });
 
     await page.screenshot({ path: "e2e-demo.png" });
+
+    const isFailed = await failed.isVisible().catch(() => false);
+    if (!isFailed) {
+      console.log("✅ Demo analysis completed successfully");
+    } else {
+      console.log("⚠️ Demo analysis failed (expected if no API key)");
+    }
+
     await electronApp.close();
   });
 });

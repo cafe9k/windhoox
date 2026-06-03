@@ -133,7 +133,10 @@ export interface CaseReviewedEvent {
 
 // Config types
 export interface AppConfig {
-  deepseekApiKey: string;
-  deepseekBaseUrl: string;
-  deepseekModel: string;
+  anthropicApiKey: string;
+  baseURL: string;
+  model: string;
+  systemPrompt: string;
+  maxTokens: number;
+  temperature: number;
 }

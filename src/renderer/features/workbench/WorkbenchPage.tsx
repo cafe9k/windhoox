@@ -61,7 +61,7 @@ function TopBar({
         </Space>
         <Space size={4}>
           <CloudOutlined style={{ color: "#1677ff" }} />
-          <Text type="secondary" style={{ fontSize: 12 }}>DeepSeek API</Text>
+          <Text type="secondary" style={{ fontSize: 12 }}>Claude API</Text>
         </Space>
         <Button
           type="text"
@@ -204,6 +204,8 @@ export function WorkbenchPage() {
     <>
       <WorkbenchLayout
         topBar={<TopBar status={status} events={events} onOpenConfig={() => setConfigModalOpen(true)} />}
+        rightCollapsed={rightCollapsed}
+        onRightCollapsedChange={setRightCollapsed}
       left={
         <LeftContextPanel
           onNewSession={handleNewSession}

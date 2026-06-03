@@ -1,13 +1,17 @@
 import { useState, useEffect } from "react";
-import { Modal, Form, Input, Button, Space, message, Typography } from "antd";
-import { KeyOutlined, ApiOutlined, EyeOutlined, EyeInvisibleOutlined } from "@ant-design/icons";
+import { Modal, Form, Input, Button, Space, message, Typography, InputNumber, Slider } from "antd";
+import { KeyOutlined, EyeOutlined, EyeInvisibleOutlined, SettingOutlined } from "@ant-design/icons";
 
 const { Text } = Typography;
+const { TextArea } = Input;
 
 interface AIConfig {
-  deepseekApiKey: string;
-  deepseekBaseUrl: string;
-  deepseekModel: string;
+  anthropicApiKey: string;
+  baseURL: string;
+  model: string;
+  systemPrompt: string;
+  maxTokens: number;
+  temperature: number;
 }
 
 interface AIConfigModalProps {
@@ -23,16 +27,18 @@ export function AIConfigModal({ open, onClose }: AIConfigModalProps) {
 
   const agentApi = (window as any).windhoox?.agent;
 
-  // Load config when modal opens
   useEffect(() => {
     if (open && agentApi?.getConfig) {
       setLoading(true);
       agentApi.getConfig()
         .then((config: AIConfig) => {
           form.setFieldsValue({
-            deepseekApiKey: config.deepseekApiKey || "",
-            deepseekBaseUrl: config.deepseekBaseUrl || "https://api.deepseek.com",
-            deepseekModel: config.deepseekModel || "deepseek-chat",
+            anthropicApiKey: config.anthropicApiKey || "",
+            baseURL: config.baseURL || "",
+            model: config.model || "claude-sonnet-4-5",
+            systemPrompt: config.systemPrompt || "",
+            maxTokens: config.maxTokens || 8000,
+            temperature: config.temperature || 0.3,
           });
         })
         .catch(() => {
@@ -52,9 +58,12 @@ export function AIConfigModal({ open, onClose }: AIConfigModalProps) {
       const values = await form.validateFields();
       setSaving(true);
       await agentApi.setConfig({
-        deepseekApiKey: values.deepseekApiKey,
-        deepseekBaseUrl: values.deepseekBaseUrl,
-        deepseekModel: values.deepseekModel,
+        anthropicApiKey: values.anthropicApiKey,
+        baseURL: values.baseURL,
+        model: values.model,
+        systemPrompt: values.systemPrompt,
+        maxTokens: values.maxTokens,
+        temperature: values.temperature,
       });
       message.success("配置已保存");
       onClose();
@@ -73,7 +82,7 @@ export function AIConfigModal({ open, onClose }: AIConfigModalProps) {
     <Modal
       title={
         <Space>
-          <KeyOutlined />
+          <SettingOutlined />
           <span>AI 模型配置</span>
         </Space>
       }
@@ -88,26 +97,27 @@ export function AIConfigModal({ open, onClose }: AIConfigModalProps) {
         </Button>,
       ]}
       destroyOnHidden
-      width={520}
+      width={640}
     >
       <Form
         form={form}
         layout="vertical"
         initialValues={{
-          deepseekBaseUrl: "https://api.deepseek.com",
-          deepseekModel: "deepseek-chat",
+          model: "claude-sonnet-4-5",
+          maxTokens: 8000,
+          temperature: 0.3,
         }}
         style={{ marginTop: 16 }}
       >
         <Form.Item
-          name="deepseekApiKey"
+          name="anthropicApiKey"
           label="API Key"
-          rules={[{ required: true, message: "请输入 DeepSeek API Key" }]}
-          extra="从 platform.deepseek.com 获取"
+          rules={[{ required: true, message: "请输入 API Key" }]}
+          extra="Anthropic API Key 或兼容服务的 Key（如 DeepSeek）"
         >
           <Input
             prefix={<KeyOutlined />}
-            placeholder="sk-..."
+            placeholder="sk-ant-... 或 DeepSeek sk-..."
             type={showKey ? "text" : "password"}
             suffix={
               <Button
@@ -121,22 +131,59 @@ export function AIConfigModal({ open, onClose }: AIConfigModalProps) {
         </Form.Item>
 
         <Form.Item
-          name="deepseekBaseUrl"
-          label="Base URL"
-          rules={[{ required: true, message: "请输入 Base URL" }]}
+          name="baseURL"
+          label="API Base URL（可选）"
+          extra="留空使用 Anthropic 官方地址。DeepSeek 兼容模式填写：https://api.deepseek.com/anthropic"
         >
-          <Input
-            prefix={<ApiOutlined />}
-            placeholder="https://api.deepseek.com"
+          <Input placeholder="https://api.deepseek.com/anthropic" />
+        </Form.Item>
+
+        <Form.Item
+          name="model"
+          label="模型"
+          rules={[{ required: true, message: "请输入模型名称" }]}
+        >
+          <Input placeholder="claude-sonnet-4-5" />
+        </Form.Item>
+
+        <Form.Item
+          name="systemPrompt"
+          label="系统提示词"
+          extra="用于指导 AI 生成测试用例的提示词"
+        >
+          <TextArea
+            rows={6}
+            placeholder="You are a senior QA engineer..."
           />
         </Form.Item>
 
         <Form.Item
-          name="deepseekModel"
-          label="模型名称"
-          rules={[{ required: true, message: "请输入模型名称" }]}
+          name="maxTokens"
+          label="最大 Token 数"
         >
-          <Input placeholder="deepseek-chat" />
+          <InputNumber
+            min={1000}
+            max={32000}
+            step={1000}
+            style={{ width: "100%" }}
+          />
+        </Form.Item>
+
+        <Form.Item
+          name="temperature"
+          label="Temperature"
+          extra="控制输出的随机性，0 为确定性，1 为创造性"
+        >
+          <Slider
+            min={0}
+            max={1}
+            step={0.1}
+            marks={{
+              0: "确定性",
+              0.5: "平衡",
+              1: "创造性",
+            }}
+          />
         </Form.Item>
       </Form>
 
