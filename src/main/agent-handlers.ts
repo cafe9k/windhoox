@@ -40,6 +40,10 @@ export function registerAgentHandlers(mainWindow: BrowserWindow | null) {
     const timestamp = Date.now();
 
     // 检查配置是否就绪
+    const config = getConfig();
+    console.log("[agent-handlers] API Key last 4:", config.anthropicApiKey.slice(-4));
+    console.log("[agent-handlers] Base URL:", config.baseURL || "(default anthropic)");
+    console.log("[agent-handlers] Model:", config.model);
     const runtime = createClaudeRuntimeFromConfig();
     if (!runtime) {
       sendEvent(mainWindow, {

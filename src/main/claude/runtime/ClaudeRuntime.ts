@@ -19,10 +19,25 @@ export class ClaudeRuntime {
 
   constructor(config: ClaudeRuntimeConfig) {
     this.config = config;
+
+    // 清理可能干扰的环境变量（如 Claude Desktop 设置的 ANTHROPIC_AUTH_TOKEN）
+    const originalAuthToken = process.env.ANTHROPIC_AUTH_TOKEN;
+    const originalApiKey = process.env.ANTHROPIC_API_KEY;
+    delete process.env.ANTHROPIC_AUTH_TOKEN;
+    delete process.env.ANTHROPIC_API_KEY;
+
     this.client = new Anthropic({
       apiKey: config.apiKey,
       ...(config.baseURL ? { baseURL: config.baseURL } : {}),
     });
+
+    // 恢复环境变量
+    if (originalAuthToken !== undefined) {
+      process.env.ANTHROPIC_AUTH_TOKEN = originalAuthToken;
+    }
+    if (originalApiKey !== undefined) {
+      process.env.ANTHROPIC_API_KEY = originalApiKey;
+    }
   }
 
   /**
@@ -164,12 +179,26 @@ export class ClaudeRuntime {
   updateConfig(newConfig: Partial<ClaudeRuntimeConfig>): void {
     this.config = { ...this.config, ...newConfig };
 
-    // 如果 API key 更新，重新创建客户端
+    // 如果 API key 或 baseURL 更新，重新创建客户端
     if (newConfig.apiKey || newConfig.baseURL) {
+      // 清理可能干扰的环境变量
+      const originalAuthToken = process.env.ANTHROPIC_AUTH_TOKEN;
+      const originalApiKey = process.env.ANTHROPIC_API_KEY;
+      delete process.env.ANTHROPIC_AUTH_TOKEN;
+      delete process.env.ANTHROPIC_API_KEY;
+
       this.client = new Anthropic({
         apiKey: this.config.apiKey,
         ...(this.config.baseURL ? { baseURL: this.config.baseURL } : {}),
       });
+
+      // 恢复环境变量
+      if (originalAuthToken !== undefined) {
+        process.env.ANTHROPIC_AUTH_TOKEN = originalAuthToken;
+      }
+      if (originalApiKey !== undefined) {
+        process.env.ANTHROPIC_API_KEY = originalApiKey;
+      }
     }
   }
 
