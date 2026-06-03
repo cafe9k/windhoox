@@ -1,6 +1,6 @@
 # Core Execution Flows
 
-> 基于 GitNexus 知识图谱自动分析，上次更新: 2026-06-03 (commit 7a7ff26)
+> 基于 GitNexus 知识图谱自动分析，上次更新: 2026-06-03 (commit 11bcef4)
 > 运行 `node scripts/update-core-flows.mjs` 刷新数据
 
 ---
@@ -152,5 +152,5 @@ coreScore = OD × 1 + MS × 2 + CC × 3
 
 | 日期 | Commit | 变更 |
 |------|--------|------|
-| 2026-06-03 | 7a7ff26 | 自动更新: 3 P0 + 1 P1 + 2 P2 |
+| 2026-06-03 | 11bcef4 | 自动更新: 3 P0 + 1 P1 + 2 P2 |
 

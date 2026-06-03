@@ -5,15 +5,11 @@
  *
  * 从 GitNexus 知识图谱提取核心流程指标，更新 docs/core-execution-flows.md。
  *
- * 使用方式:
- *   1. 确保索引是最新的:  npx gitnexus analyze
- *   2. 运行本脚本:      node scripts/update-core-flows.mjs
+ * 触发方式:
+ *   main 分支每次提交时固定运行，不做变更检测。
+ *   手动运行: node scripts/update-core-flows.mjs
  *
- * 原理: 调用 GitNexus MCP 的 Cypher 查询接口（通过 stdio），
- *       计算 coreScore，重新生成文档。
- *
- * 注意: 本脚本需要 GitNexus MCP server 正在运行。
- *       在 Claude Code 中可以直接使用 MCP 工具，本脚本是备用方案。
+ * 注意: 运行前需确保 GitNexus 索引是最新的 (npx gitnexus analyze)。
  */
 
 import { execSync } from "node:child_process";
@@ -31,15 +27,11 @@ const RULES = {
     P1: { min: 8, label: "支撑流程" },
     P2: { min: 0, label: "工具流程" },
   },
-  entryPointThreshold: 3, // min outDegree for non-test entry point
+  entryPointThreshold: 3,
 };
 
 function calcScore(od, ms, cc) {
-  return (
-    od * RULES.weights.outDegree +
-    ms * RULES.weights.maxSteps +
-    cc * RULES.weights.crossCommunity
-  );
+  return od * RULES.weights.outDegree + ms * RULES.weights.maxSteps + cc * RULES.weights.crossCommunity;
 }
 
 function classify(score) {
@@ -47,8 +39,6 @@ function classify(score) {
   if (score >= RULES.tiers.P1.min) return "P1";
   return "P2";
 }
-
-// ─── Git metadata ───
 
 function getCommitHash() {
   try {
@@ -151,9 +141,8 @@ function renderFlow(flow) {
 `;
 }
 
-// ─── Static flow definitions (manually curated + auto-scored) ───
-// 这些流程描述需要人工维护，分数通过 GitNexus 自动计算。
-// 当新的 IPC handler 或高 OD 函数出现时，应在此添加新条目。
+// ─── Flow definitions (manually curated, auto-scored) ───
+// 新增流程时在此添加条目。分数通过 STATIC_SCORES 维护。
 
 const FLOWS = [
   {
@@ -216,11 +205,6 @@ const FLOWS = [
   },
 ];
 
-// ─── GitNexus scoring (placeholder — actual scoring via MCP in Claude) ───
-
-// 当在 Claude Code 中运行时，使用 MCP 工具获取实时数据。
-// 当作为独立脚本运行时，使用上次已知的静态分数。
-
 const STATIC_SCORES = {
   "registerAgentHandlers": { od: 15, ms: 6, cc: 4 },
   "handleSave / getConfigMasked": { od: 3, ms: 5, cc: 2 },
@@ -252,9 +236,24 @@ function scoreFlows() {
 
 const flows = scoreFlows();
 const doc = generateDoc(flows);
+
+// 检查内容是否真的有变化（忽略 commit hash 和时间戳的行）
+let hasContentChange = true;
+try {
+  const existing = fs.readFileSync(DOCS_PATH, "utf-8");
+  const strip = (s) => s.replace(/^> 基于.*$/m, "").replace(/^\|.*自动更新.*$/m, "");
+  hasContentChange = strip(existing) !== strip(doc);
+} catch {
+  // 文件不存在，首次生成
+}
+
 fs.writeFileSync(DOCS_PATH, doc, "utf-8");
 
-console.log(`✅ Updated ${DOCS_PATH}`);
+if (hasContentChange) {
+  console.log(`✅ Updated ${DOCS_PATH}`);
+} else {
+  console.log(`✅ Refreshed ${DOCS_PATH} (仅更新 commit hash)`);
+}
 console.log(`   ${flows.filter(f => f.tier === "P0").length} P0 | ${flows.filter(f => f.tier === "P1").length} P1 | ${flows.filter(f => f.tier === "P2").length} P2`);
 flows.forEach((f) => {
   console.log(`   ${f.tier} | score=${f.score} | ${f.name}`);

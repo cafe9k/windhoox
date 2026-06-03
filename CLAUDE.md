@@ -1,7 +1,7 @@
 <!-- gitnexus:start -->
 # GitNexus — Code Intelligence
 
-This project is indexed by GitNexus as **windhoox** (944 symbols, 1292 relationships, 23 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
+This project is indexed by GitNexus as **windhoox** (1010 symbols, 1373 relationships, 23 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
 
 > If any GitNexus tool warns the index is stale, run `npx gitnexus analyze` in terminal first.
 
@@ -27,18 +27,19 @@ coreScore = 出度(OD) × 1 + 最长Process步骤(MS) × 2 + 跨社区数(CC) ×
 - **P1 支撑流程**: coreScore 8–14
 - **P2 工具流程**: coreScore < 8
 
-### 触发更新的时机
+### 触发规则
 
-当以下任一条件满足时，运行 `npx gitnexus analyze && node scripts/update-core-flows.mjs` 刷新文档：
+**main 分支每次提交时固定运行**，不做变更检测：
 
-1. **新增 IPC handler** — 添加了新的 `ipcMain.handle("agent:*")` 通道
-2. **新增高 OD 函数** — 通过 `gitnexus_cypher` 查询发现出度 ≥ 3 的新编排函数
-3. **新增 Process** — `gitnexus://repo/windhoox/processes` 出现新的跨社区流程
-4. **结构性重构** — 合并到 main 前运行一次
+```bash
+npx gitnexus analyze && node scripts/update-core-flows.mjs
+```
+
+脚本会检查文档内容是否有实质变化（忽略 commit hash 和时间戳），无变化时仅刷新时间戳，不产生多余 diff。
 
 ### 手动维护的部分
 
-`scripts/update-core-flows.mjs` 中 `FLOWS` 数组的流程**描述**和**执行链**需人工维护。自动计算的只有 `coreScore` 分数和等级分类。新增流程需手动添加到 `FLOWS` 和 `STATIC_SCORES`。
+`scripts/update-core-flows.mjs` 中 `FLOWS` 数组的流程**描述**和 `STATIC_SCORES` 中的分数需人工维护。新增流程需手动添加到这两个对象。
 
 ## Never Do
 
