@@ -53,19 +53,27 @@ Renderer
 
 ### 步骤清单
 
-| 步骤 | 名称 | 主要结果 |
-|---|---|---|
-| Step 1 | 基线确认与测试夹具准备 | 当前测试绿灯，Claude fixture 就绪 |
-| Step 2 | 业务 Schema 与结果提取器 | 可校验 Claude 固定 JSON 输出 |
-| Step 3 | 事件适配器 | `WindhooxAgentResult` 可稳定转 `AgentEvent` |
-| Step 4 | Claude 配置迁移 | `AppConfig` 从 DeepSeek 切到 Claude |
-| Step 5 | Claude Runtime 骨架 | 建立 SDK 隔离层和可 mock 的 runtime |
-| Step 6 | IPC 分析链路切换 | `agent:start-analysis` 改走 Claude runtime |
-| Step 7 | Artifact 与 Session 持久化 | 真实落盘，支持 `loadSession` 回放 |
-| Step 8 | Renderer 配置与错误态适配 | UI 不再出现 DeepSeek 配置 |
-| Step 9 | 移除 DeepSeek legacy | 删除 DeepSeek client 与旧测试 |
-| Step 10 | 打包资源与预留目录 | Claude resources 和 builder 配置就绪 |
-| Step 11 | 发布级总验收 | 全链路、回归、安全检查完成 |
+| 步骤 | 名称 | 主要结果 | 状态 |
+|---|---|---|---|
+| Step 1 | 基线确认与测试夹具准备 | 当前测试绿灯，Claude fixture 就绪 | ✅ 完成 |
+| Step 2 | 业务 Schema 与结果提取器 | 可校验 Claude 固定 JSON 输出 | ✅ 完成 |
+| Step 3 | 事件适配器 | `WindhooxAgentResult` 可稳定转 `AgentEvent` | ✅ 完成 |
+| Step 4 | Claude 配置迁移 | `AppConfig` 从 DeepSeek 切到 Claude | ✅ 完成 |
+| Step 5 | Claude Runtime 骨架 | 建立 SDK 隔离层和可 mock 的 runtime | ✅ 完成 |
+| Step 6 | IPC 分析链路切换 | `agent:start-analysis` 改走 Claude runtime | ✅ 完成 |
+| Step 7 | Artifact 与 Session 持久化 | 真实落盘，支持 `loadSession` 回放 | ✅ 完成 |
+| Step 8 | Renderer 配置与错误态适配 | UI 不再出现 DeepSeek 配置 | ✅ 完成 |
+| Step 9 | 移除 DeepSeek legacy | 删除 DeepSeek client 与旧测试 | ✅ 完成 |
+| Step 10 | 打包资源与预留目录 | Claude resources 和 builder 配置就绪 | ✅ 完成 |
+| Step 11 | 发布级总验收 | 全链路、回归、安全检查完成 | ✅ 完成 |
+
+**MVP 完成时间**: 2026-06-03  
+**验证结果**:
+- ✅ 142 单元测试通过
+- ✅ TypeScript 类型检查通过
+- ✅ 构建通过
+- ✅ DeepSeek 残留检查通过（仅测试负向断言和兼容模式提示）
+- ✅ `/tmp` 假路径检查通过（仅测试 fixture 和 demo-data）
 
 ---
 
