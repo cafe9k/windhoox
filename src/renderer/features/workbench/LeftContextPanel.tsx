@@ -1,5 +1,5 @@
 import { Button, Typography, Divider, Empty, Tag, Space, List } from "antd";
-import { PlusOutlined, FileTextOutlined, QuestionCircleOutlined, FileOutlined, CodeOutlined, ApiOutlined } from "@ant-design/icons";
+import { PlusOutlined, FileTextOutlined, QuestionCircleOutlined, FileOutlined, CodeOutlined, ApiOutlined, SettingOutlined } from "@ant-design/icons";
 import { Conversations } from "@ant-design/x";
 
 const { Text } = Typography;
@@ -21,6 +21,7 @@ interface LeftContextPanelProps {
   onNewSession?: () => void;
   onSessionClick?: (key: string) => void;
   onContextClick?: (name: string) => void;
+  onOpenConfig?: () => void;
 }
 
 const contextIconMap: Record<string, React.ReactNode> = {
@@ -63,6 +64,7 @@ export function LeftContextPanel({
   onNewSession,
   onSessionClick,
   onContextClick,
+  onOpenConfig,
 }: LeftContextPanelProps) {
   const handleConversationClick = (key: string) => {
     onSessionClick?.(key);
@@ -129,6 +131,16 @@ export function LeftContextPanel({
         )}
       </div>
 
+      <div className="left-panel-footer">
+        <Button
+          type="text"
+          block
+          icon={<SettingOutlined />}
+          onClick={onOpenConfig}
+        >
+          AI 配置
+        </Button>
+      </div>
     </div>
   );
 }

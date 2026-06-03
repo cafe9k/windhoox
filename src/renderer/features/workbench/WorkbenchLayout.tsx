@@ -7,15 +7,13 @@ interface WorkbenchLayoutProps {
   left: React.ReactNode;
   center: React.ReactNode;
   right: React.ReactNode;
-  topBar?: React.ReactNode;
   rightCollapsed: boolean;
   onRightCollapsedChange: (collapsed: boolean) => void;
 }
 
-export function WorkbenchLayout({ left, center, right, topBar, rightCollapsed, onRightCollapsedChange }: WorkbenchLayoutProps) {
+export function WorkbenchLayout({ left, center, right, rightCollapsed, onRightCollapsedChange }: WorkbenchLayoutProps) {
   return (
     <div className="workbench-root">
-      {topBar && <div className="workbench-topbar">{topBar}</div>}
       <div className="workbench-body">
         <Sider width={280} className="workbench-left">
           {left}

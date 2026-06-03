@@ -1,17 +1,13 @@
-import { Typography, Space, Tag, Button, message } from "antd";
-import { CloudOutlined, CheckCircleOutlined, SettingOutlined } from "@ant-design/icons";
-import { useState, useCallback, useReducer, useMemo, useEffect } from "react";
+import { message } from "antd";
+import { useState, useCallback, useReducer, useEffect } from "react";
 import { WorkbenchLayout } from "./WorkbenchLayout";
 import { LeftContextPanel } from "./LeftContextPanel";
 import { AgentConversationPanel } from "./AgentConversationPanel";
 import { TestArtifactPanel } from "./TestArtifactPanel";
-import { AgentProgressBadge } from "./AgentProgressBadge";
 import { AIConfigModal } from "./AIConfigModal";
 import { agentStateReducer, type AgentState } from "../agent/agentState";
 import type { AgentEvent } from "../../../types/agent";
 import { DEMO_EVENTS, DEMO_REQUIREMENT, DEMO_SESSION_ID } from "../../demo-data";
-
-const { Text } = Typography;
 
 type SessionStatus = "idle" | "running" | "completed" | "failed";
 
@@ -19,61 +15,6 @@ interface Session {
   id: string;
   status: SessionStatus;
   requirement?: string;
-}
-
-function TopBar({
-  status,
-  events,
-  onOpenConfig,
-}: {
-  status: SessionStatus;
-  events: AgentEvent[];
-  onOpenConfig: () => void;
-}) {
-  const statusText = {
-    idle: "就绪",
-    running: "分析中...",
-    completed: "分析完成",
-    failed: "分析失败",
-  }[status];
-
-  const statusColor = {
-    idle: "#52c41a",
-    running: "#1677ff",
-    completed: "#52c41a",
-    failed: "#ff4d4f",
-  }[status];
-
-  return (
-    <div className="topbar-content">
-      <Space>
-        <Text strong>Windhoox</Text>
-        <Tag color="processing">测试设计工作台</Tag>
-      </Space>
-
-      {/* Center: Agent Progress */}
-      <AgentProgressBadge status={status} events={events} />
-
-      <Space size={16}>
-        <Space size={4}>
-          <CheckCircleOutlined style={{ color: statusColor }} />
-          <Text type="secondary" style={{ fontSize: 12 }}>本地 Agent {statusText}</Text>
-        </Space>
-        <Space size={4}>
-          <CloudOutlined style={{ color: "#1677ff" }} />
-          <Text type="secondary" style={{ fontSize: 12 }}>Claude API</Text>
-        </Space>
-        <Button
-          type="text"
-          size="small"
-          icon={<SettingOutlined />}
-          onClick={onOpenConfig}
-        >
-          AI 配置
-        </Button>
-      </Space>
-    </div>
-  );
 }
 
 export function WorkbenchPage() {
@@ -203,13 +144,13 @@ export function WorkbenchPage() {
   return (
     <>
       <WorkbenchLayout
-        topBar={<TopBar status={status} events={events} onOpenConfig={() => setConfigModalOpen(true)} />}
         rightCollapsed={rightCollapsed}
         onRightCollapsedChange={setRightCollapsed}
       left={
         <LeftContextPanel
           onNewSession={handleNewSession}
           onSessionClick={(key) => console.log("Session clicked:", key)}
+          onOpenConfig={() => setConfigModalOpen(true)}
           contexts={events.filter((e) => e.type === "reading_sources").map((e) => ({
             name: e.type === "reading_sources" ? e.source : "",
             type: "code" as const,

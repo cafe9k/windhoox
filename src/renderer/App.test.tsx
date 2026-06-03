@@ -14,16 +14,14 @@ describe("App", () => {
   it("renders the three-column workbench", () => {
     render(<App />);
 
-    // Top bar
-    expect(screen.getByText("Windhoox")).toBeInTheDocument();
-    expect(screen.getByText("测试设计工作台")).toBeInTheDocument();
-
     // Left panel
     expect(screen.getByText("新建测试任务")).toBeInTheDocument();
     expect(screen.getByText("共同购买推荐资源逻辑")).toBeInTheDocument();
     expect(screen.getByText("办签材料自动分类")).toBeInTheDocument();
+    expect(screen.getByText("AI 配置")).toBeInTheDocument();
 
     // Center panel
+    expect(screen.getByText("Agent 工作台")).toBeInTheDocument();
     expect(screen.getByText("开始一次测试设计任务")).toBeInTheDocument();
     expect(screen.getByText("快捷任务")).toBeInTheDocument();
 

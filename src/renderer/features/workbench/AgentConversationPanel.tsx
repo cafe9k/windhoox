@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import { Typography, Space } from "antd";
 import { eventToBubble, createUserBubble, createLoadingBubble } from "./eventToBubble";
 import { AnalysisProgressCard } from "./AnalysisProgressCard";
+import { AgentProgressBadge } from "./AgentProgressBadge";
 import type { AgentEvent } from "../../../types/agent";
 
 const { Text } = Typography;
@@ -150,7 +151,10 @@ export function AgentConversationPanel({
     return (
       <div className="center-panel">
         <div className="center-panel-header">
-          <Text strong>Agent 工作台</Text>
+          <Space>
+            <Text strong>Agent 工作台</Text>
+            <AgentProgressBadge status={status} events={events} />
+          </Space>
         </div>
 
         <div className="center-panel-body">
@@ -204,11 +208,7 @@ export function AgentConversationPanel({
       <div className="center-panel-header">
         <Space>
           <Text strong>Agent 工作台</Text>
-          <Text type="secondary" style={{ fontSize: 12 }}>
-            {status === "running" && "分析中..."}
-            {status === "completed" && "分析完成"}
-            {status === "failed" && "分析失败"}
-          </Text>
+          <AgentProgressBadge status={status} events={events} />
         </Space>
       </div>
 
