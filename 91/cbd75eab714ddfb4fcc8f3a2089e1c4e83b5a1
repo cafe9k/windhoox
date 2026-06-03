@@ -1,0 +1,14 @@
+.env.local.example
+  h_42daa5df821dff 5
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.10-trip",
+  "base_commit_sha": "91cbd75eab714ddfb4fcc8f3a2089e1c4e83b5a1",
+  "prompts": {},
+  "humans": {
+    "h_42daa5df821dff": {
+      "author": "qingqing.zhang <qingqing.zhang@trip.com>"
+    }
+  }
+}
