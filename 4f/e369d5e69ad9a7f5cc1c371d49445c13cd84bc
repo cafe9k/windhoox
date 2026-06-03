@@ -1,0 +1,32 @@
+src/main/claude/paths.test.ts
+  s_24b7a8841f3f88::t_f16ec796ebd67e 1-82
+src/main/claude/paths.ts
+  s_24b7a8841f3f88::t_0377a59f02fe23 1-46
+AGENTS.md
+  s_24b7a8841f3f88::t_63b7c8d455b429 4
+CLAUDE.md
+  s_24b7a8841f3f88::t_63b7c8d455b429 4
+electron-builder.yml
+  s_24b7a8841f3f88::t_4c97652936e4ca 12-16
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.10-trip",
+  "base_commit_sha": "4fe369d5e69ad9a7f5cc1c371d49445c13cd84bc",
+  "prompts": {},
+  "humans": {
+    "h_42daa5df821dff": {
+      "author": "qingqing.zhang <qingqing.zhang@trip.com>"
+    }
+  },
+  "sessions": {
+    "s_24b7a8841f3f88": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "cc0b97e8-cd98-4459-a5b7-f39676ca720a",
+        "model": "qwen3.7-max"
+      },
+      "human_author": "qingqing.zhang <qingqing.zhang@trip.com>"
+    }
+  }
+}
