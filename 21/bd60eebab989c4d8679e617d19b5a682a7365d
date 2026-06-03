@@ -1,0 +1,23 @@
+CLAUDE.md
+  s_24b7a8841f3f88::t_e1fd38c3c499cd 4
+AGENTS.md
+  s_24b7a8841f3f88::t_e1fd38c3c499cd 4
+docs/claude-agent-sdk-first-implementation-plan.md
+  s_24b7a8841f3f88::t_12cd6aa7fcea27 1075-1232
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.10-trip",
+  "base_commit_sha": "21bd60eebab989c4d8679e617d19b5a682a7365d",
+  "prompts": {},
+  "sessions": {
+    "s_24b7a8841f3f88": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "cc0b97e8-cd98-4459-a5b7-f39676ca720a",
+        "model": "qwen3.7-max"
+      },
+      "human_author": "qingqing.zhang <qingqing.zhang@trip.com>"
+    }
+  }
+}
