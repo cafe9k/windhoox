@@ -1,0 +1,20 @@
+docs/claude-agent-sdk-first-implementation-plan.md
+  s_561a077ab8e5de::t_e543ce8149e4b1 232-238,257-266
+  s_561a077ab8e5de::t_a216717be04429 1-231,239-256,267-1074
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.10-trip",
+  "base_commit_sha": "d0edfddd605446d83608f38256cb6dc37413bd9f",
+  "prompts": {},
+  "sessions": {
+    "s_561a077ab8e5de": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e8b64-6933-7240-9210-395ce3fd6822",
+        "model": "gpt-5.5"
+      },
+      "human_author": "qingqing.zhang <qingqing.zhang@trip.com>"
+    }
+  }
+}
