@@ -184,4 +184,3 @@ export function registerAgentHandlers(mainWindow: BrowserWindow | null) {
     return setConfig(updates);
   });
 }
-  ipcMain.handle("agent:test-new-handler", async () => { return { test: true }; });
