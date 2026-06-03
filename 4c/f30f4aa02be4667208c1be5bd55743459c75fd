@@ -1,0 +1,31 @@
+AGENTS.md
+  s_24b7a8841f3f88::t_546879ce1d5082 4
+CLAUDE.md
+  s_24b7a8841f3f88::t_546879ce1d5082 4
+.claude/launch.json
+  s_0bd98b54aa98db::t_f6337f605f0b75 1-11
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.10-trip",
+  "base_commit_sha": "4cf30f4aa02be4667208c1be5bd55743459c75fd",
+  "prompts": {},
+  "sessions": {
+    "s_0bd98b54aa98db": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4a409eba-a991-4b61-85f1-4f7f82a85a30",
+        "model": "qwen3.7-max"
+      },
+      "human_author": "qingqing.zhang <qingqing.zhang@trip.com>"
+    },
+    "s_24b7a8841f3f88": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "cc0b97e8-cd98-4459-a5b7-f39676ca720a",
+        "model": "qwen3.7-max"
+      },
+      "human_author": "qingqing.zhang <qingqing.zhang@trip.com>"
+    }
+  }
+}
