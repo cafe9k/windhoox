@@ -9,6 +9,11 @@ files:
   - dist/**
   - dist-electron/**
   - package.json
+extraResources:
+  - from: resources/claude
+    to: claude
+    filter:
+      - "**/*"
 mac:
   target:
     - dmg
