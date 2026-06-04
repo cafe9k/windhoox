@@ -96,10 +96,12 @@ CLAUDE_MODEL=claude-sonnet-4-5
       expect(config.anthropicApiKey).toBe("sk-ant-key");
     });
 
-    it("ignores old DeepSeek env variables", () => {
-      writeEnvLocal("DEEPSEEK_API_KEY=sk-deepseek\nDEEPSEEK_BASE_URL=https://deepseek.com\n");
+    it("reads DEEPSEEK_API_KEY from .env.local", () => {
+      writeEnvLocal("DEEPSEEK_API_KEY=sk-deepseek\nDEEPSEEK_BASE_URL=https://deepseek.com\nDEEPSEEK_MODEL=deepseek-reasoner\n");
       const config = getConfig();
-      expect(config.anthropicApiKey).toBe("");
+      expect(config.anthropicApiKey).toBe("sk-deepseek");
+      expect(config.baseURL).toBe("https://deepseek.com");
+      expect(config.model).toBe("deepseek-reasoner");
     });
   });
 

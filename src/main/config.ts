@@ -124,11 +124,11 @@ function loadEnvLocal(): Partial<AppConfig> {
         const key = trimmed.slice(0, eqIdx).trim();
         const value = trimmed.slice(eqIdx + 1).trim().replace(/^["']|["']$/g, "");
 
-        if (key === "CLAUDE_API_KEY") {
+        if (key === "CLAUDE_API_KEY" || key === "DEEPSEEK_API_KEY") {
           result.anthropicApiKey = value;
-        } else if (key === "CLAUDE_BASE_URL") {
+        } else if (key === "CLAUDE_BASE_URL" || key === "DEEPSEEK_BASE_URL") {
           result.baseURL = value;
-        } else if (key === "CLAUDE_MODEL") {
+        } else if (key === "CLAUDE_MODEL" || key === "DEEPSEEK_MODEL") {
           result.model = value;
         } else if (key === "CLAUDE_SYSTEM_PROMPT") {
           result.systemPrompt = value;
