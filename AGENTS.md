@@ -19,6 +19,7 @@ This project is indexed by GitNexus as **windhoox** (1010 symbols, 1373 relation
 - NEVER ignore HIGH or CRITICAL risk warnings from impact analysis.
 - NEVER rename symbols with find-and-replace — use `gitnexus_rename` which understands the call graph.
 - NEVER commit changes without running `gitnexus_detect_changes()` to check affected scope.
+- **NEVER delete `.env.local` from the workspace.** This file contains the `DEEPSEEK_API_KEY` / `CLAUDE_API_KEY` required for the agent analysis pipeline. Without it, `config.ts → loadEnvLocal()` returns empty credentials, `createAgentRuntime()` fails, and all `agent:start-analysis` / `agent:continue-analysis` calls will immediately emit `run_failed` with "Claude API 未配置". If the file is accidentally deleted, restore it from backup or re-enter the API key.
 
 ## Resources
 
