@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import {
+  EventAdapter,
   resultToAgentEvents,
   createRunStartedEvent,
   createReadingSourceEvents,
@@ -177,6 +178,79 @@ describe("ClaudeEventAdapter", () => {
     it("returns empty array when no sources", () => {
       const events = createReadingSourceEvents(SESSION_ID, [], BASE_TS);
       expect(events).toHaveLength(0);
+    });
+  });
+
+  describe("EventAdapter class", () => {
+    it("instances have independent ID counters", () => {
+      const adapter1 = new EventAdapter();
+      const adapter2 = new EventAdapter();
+
+      const result = loadValidResult();
+      // Clear IDs so auto-generation kicks in
+      result.questions[0] = { id: "", category: "product", question: "Q1" };
+      result.cases[0] = { ...result.cases[0], id: "" };
+
+      const events1 = adapter1.resultToAgentEvents(result, SESSION_ID, BASE_TS);
+      const events2 = adapter2.resultToAgentEvents(result, SESSION_ID, BASE_TS);
+
+      // Both adapters start from counter 1, so IDs should be identical within each adapter
+      const q1 = events1.find((e) => e.type === "missing_questions");
+      const q2 = events2.find((e) => e.type === "missing_questions");
+      if (q1?.type === "missing_questions" && q2?.type === "missing_questions") {
+        expect(q1.questions[0].id).toBe("q-auto-1");
+        expect(q2.questions[0].id).toBe("q-auto-1");
+      }
+
+      const c1 = events1.find((e) => e.type === "case_candidates");
+      const c2 = events2.find((e) => e.type === "case_candidates");
+      if (c1?.type === "case_candidates" && c2?.type === "case_candidates") {
+        expect(c1.cases[0].id).toBe("TC-auto-001");
+        expect(c2.cases[0].id).toBe("TC-auto-001");
+      }
+    });
+
+    it("resetCounters resets instance counters", () => {
+      const adapter = new EventAdapter();
+      const result = loadValidResult();
+      result.questions[0] = { id: "", category: "product", question: "Q1" };
+
+      // First call: counter = 1
+      const events1 = adapter.resultToAgentEvents(result, SESSION_ID, BASE_TS);
+      const q1 = events1.find((e) => e.type === "missing_questions");
+      if (q1?.type === "missing_questions") {
+        expect(q1.questions[0].id).toBe("q-auto-1");
+      }
+
+      // Reset: counter back to 0
+      adapter.resetCounters();
+
+      // Second call: counter = 1 again
+      const events2 = adapter.resultToAgentEvents(result, SESSION_ID, BASE_TS);
+      const q2 = events2.find((e) => e.type === "missing_questions");
+      if (q2?.type === "missing_questions") {
+        expect(q2.questions[0].id).toBe("q-auto-1");
+      }
+    });
+
+    it("sequential calls increment counters within an instance", () => {
+      const adapter = new EventAdapter();
+      const result = loadValidResult();
+      result.questions[0] = { id: "", category: "product", question: "Q1" };
+
+      // First call: counter = 1
+      const events1 = adapter.resultToAgentEvents(result, SESSION_ID, BASE_TS);
+      const q1 = events1.find((e) => e.type === "missing_questions");
+      if (q1?.type === "missing_questions") {
+        expect(q1.questions[0].id).toBe("q-auto-1");
+      }
+
+      // Second call without reset: counter = 2
+      const events2 = adapter.resultToAgentEvents(result, SESSION_ID, BASE_TS);
+      const q2 = events2.find((e) => e.type === "missing_questions");
+      if (q2?.type === "missing_questions") {
+        expect(q2.questions[0].id).toBe("q-auto-2");
+      }
     });
   });
 });

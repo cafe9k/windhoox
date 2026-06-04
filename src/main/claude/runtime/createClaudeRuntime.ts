@@ -20,6 +20,7 @@ export function createClaudeRuntimeFromConfig(): ClaudeRuntime | null {
     systemPrompt: config.systemPrompt,
     maxTokens: config.maxTokens,
     temperature: config.temperature,
+    enableStructuredOutput: true,
   };
 
   return new ClaudeRuntime(runtimeConfig);

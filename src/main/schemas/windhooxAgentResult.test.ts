@@ -21,11 +21,15 @@ describe("windhooxAgentResultSchema", () => {
     }
   });
 
-  it("rejects when pageUnderstanding is missing", () => {
+  it("accepts when pageUnderstanding is missing (has default)", () => {
     const raw = JSON.parse(loadFixture("valid-final-result.json"));
     delete raw.pageUnderstanding;
     const result = windhooxAgentResultSchema.safeParse(raw);
-    expect(result.success).toBe(false);
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.pageUnderstanding.pageType).toBe("unknown");
+      expect(result.data.pageUnderstanding.confidence).toBe(0);
+    }
   });
 
   it("rejects when confidence has invalid enum value", () => {

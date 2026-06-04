@@ -6,7 +6,8 @@ import type {
   LoadSessionPayload,
   AppConfig,
   AgentEventListener,
-  AgentEvent
+  AgentEvent,
+  SessionSummary,
 } from "../types/agent.js";
 
 const agentApi = {
@@ -14,10 +15,14 @@ const agentApi = {
     ipcRenderer.invoke("agent:start-analysis", payload),
   continueAnalysis: (payload: ContinueAnalysisPayload) =>
     ipcRenderer.invoke("agent:continue-analysis", payload),
+  cancelAnalysis: (payload: { sessionId: string }) =>
+    ipcRenderer.invoke("agent:cancel-analysis", payload),
   reviewCase: (payload: ReviewCasePayload) =>
     ipcRenderer.invoke("agent:review-case", payload),
   loadSession: (payload: LoadSessionPayload) =>
     ipcRenderer.invoke("agent:load-session", payload),
+  listSessions: (): Promise<SessionSummary[]> =>
+    ipcRenderer.invoke("agent:list-sessions"),
   getConfig: () =>
     ipcRenderer.invoke("agent:get-config"),
   setConfig: (updates: Partial<AppConfig>) =>

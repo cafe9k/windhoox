@@ -7,6 +7,7 @@ import {
   CheckCircleOutlined,
   BarChartOutlined,
   CloseCircleOutlined,
+  ReloadOutlined,
 } from "@ant-design/icons";
 import type { AgentEvent } from "../../../types/agent";
 
@@ -116,6 +117,15 @@ export function eventToBubble(event: AgentEvent): BubbleItem | null {
         role: "assistant",
         placement: "left",
         avatar: <StyledAvatar icon={<CloseCircleOutlined />} bg="#ff4d4f" />,
+      };
+
+    case "run_continued":
+      return {
+        key: `continued-${event.timestamp}`,
+        content: `继续分析（基于上一轮会话 ${event.previousSessionId.slice(0, 8)}...）`,
+        role: "assistant",
+        placement: "left",
+        avatar: <StyledAvatar icon={<ReloadOutlined />} bg="#722ed1" />,
       };
 
     case "case_reviewed":

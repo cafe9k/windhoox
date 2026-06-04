@@ -2,17 +2,32 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { ipcMain, BrowserWindow } from "electron";
 import { registerAgentHandlers } from "./agent-handlers.js";
 
-const mockWriteAll = vi.fn().mockReturnValue({
-  conversationPath: "/tmp/windhoox-test/session-123/conversation.md",
-  insightPath: "/tmp/windhoox-test/session-123/insight.json",
-  casesPath: "/tmp/windhoox-test/session-123/cases.json",
-  coveragePath: "/tmp/windhoox-test/session-123/coverage.json",
-  validationPath: "/tmp/windhoox-test/session-123/validation.json",
-  eventsPath: "/tmp/windhoox-test/session-123/events.json",
-  metadataPath: "/tmp/windhoox-test/session-123/metadata.json",
+const mockRunAnalysis = vi.fn().mockResolvedValue({
+  sessionId: "mock-session-id",
+  success: true,
+  artifactPaths: {
+    conversationPath: "/tmp/windhoox-test/session-123/conversation.md",
+    insightPath: "/tmp/windhoox-test/session-123/insight.json",
+    casesPath: "/tmp/windhoox-test/session-123/cases.json",
+    coveragePath: "/tmp/windhoox-test/session-123/coverage.json",
+  },
 });
 
+const mockContinueAnalysis = vi.fn().mockResolvedValue({
+  sessionId: "mock-continue-session-id",
+  success: true,
+  artifactPaths: {
+    conversationPath: "/tmp/windhoox-test/continue-session/conversation.md",
+    insightPath: "/tmp/windhoox-test/continue-session/insight.json",
+    casesPath: "/tmp/windhoox-test/continue-session/cases.json",
+    coveragePath: "/tmp/windhoox-test/continue-session/coverage.json",
+  },
+});
+
+const mockGetModel = vi.fn().mockReturnValue("claude-sonnet-4-5");
+
 const mockLoadSession = vi.fn().mockReturnValue(null);
+const mockListSessions = vi.fn().mockReturnValue([]);
 
 // Mock electron
 vi.mock("electron", () => ({
@@ -42,132 +57,35 @@ vi.mock("./config.js", () => ({
   isConfigReady: vi.fn(() => true),
 }));
 
-// Mock Claude runtime
-const mockStartAnalysis = vi.fn().mockResolvedValue({
-  id: "msg_test",
-  role: "assistant",
-  content: [
-    {
-      type: "text",
-      text: JSON.stringify({
-        pageUnderstanding: {
-          pageType: "form",
-          confidence: 0.9,
-          modules: [],
-          risks: [],
-        },
-        insights: [
-          {
-            businessRule: "test rule",
-            risk: "test risk",
-            evidence: "test evidence",
-            confidence: "high",
-          },
-        ],
-        questions: [
-          { id: "q-1", category: "product", question: "test question" },
-        ],
-        cases: [
-          {
-            id: "TC-001",
-            title: "test case",
-            description: "test description",
-            preconditions: [],
-            steps: ["step 1"],
-            expectedResult: "expected result",
-          },
-        ],
-        coverage: [
-          { requirementId: "REQ-01", caseIds: ["TC-001"] },
-        ],
-        validation: {
-          passed: true,
-          score: 100,
-          missingCoverage: [],
-          duplicatedCases: [],
-        },
-      }),
-    },
-  ],
-  model: "claude-sonnet-4-5",
-  stop_reason: "end_turn",
-  usage: { input_tokens: 100, output_tokens: 50 },
-});
-
+// Mock createClaudeRuntimeFromConfig — returns an object with ClaudeRuntime interface
 vi.mock("./claude/runtime/createClaudeRuntime.js", () => ({
   createClaudeRuntimeFromConfig: vi.fn(() => ({
-    startAnalysis: mockStartAnalysis,
+    startAnalysis: vi.fn().mockResolvedValue({
+      id: "msg_test",
+      role: "assistant",
+      content: [{ type: "text", text: "{}" }],
+      usage: { input_tokens: 100, output_tokens: 50 },
+    }),
     getConfig: vi.fn(() => ({ model: "claude-sonnet-4-5" })),
   })),
 }));
 
-// Mock extractResult and event adapters
-vi.mock("./claude/runtime/ClaudeResultExtractor.js", () => ({
-  extractResult: vi.fn((text) => ({
-    success: true,
-    data: JSON.parse(text),
-  })),
+// Mock ClaudeAgentRuntime — the key new dependency
+vi.mock("./claude/ClaudeAgentRuntime.js", () => ({
+  ClaudeAgentRuntime: vi.fn().mockImplementation(function () {
+    this.runAnalysis = mockRunAnalysis;
+    this.continueAnalysis = mockContinueAnalysis;
+    this.getModel = mockGetModel;
+  }),
 }));
 
-vi.mock("./claude/runtime/ClaudeEventAdapter.js", () => ({
-  createRunStartedEvent: vi.fn((sessionId, timestamp) => ({
-    type: "run_started",
-    sessionId,
-    taskId: `task-${sessionId}`,
-    timestamp,
-  })),
-  createReadingSourceEvents: vi.fn((sessionId, sources, timestamp) =>
-    sources.map((source, i) => ({
-      type: "reading_sources",
-      sessionId,
-      source,
-      timestamp: timestamp + i,
-    }))
-  ),
-  resultToAgentEvents: vi.fn((data, sessionId) => [
-    {
-      type: "requirement_insight",
-      sessionId,
-      insight: data.insights[0],
-      timestamp: Date.now(),
-    },
-    {
-      type: "missing_questions",
-      sessionId,
-      questions: data.questions,
-      timestamp: Date.now() + 1,
-    },
-    {
-      type: "case_candidates",
-      sessionId,
-      cases: data.cases,
-      timestamp: Date.now() + 2,
-    },
-    {
-      type: "coverage_matrix",
-      sessionId,
-      matrix: data.coverage,
-      timestamp: Date.now() + 3,
-    },
-  ]),
+// Mock SessionStore
+vi.mock("./storage/SessionStore.js", () => ({
+  SessionStore: vi.fn().mockImplementation(function () {
+    this.loadSession = mockLoadSession;
+    this.listSessions = mockListSessions;
+  }),
 }));
-
-// Mock storage
-vi.mock("./storage/ArtifactWriter.js", () => {
-  return {
-    ArtifactWriter: class {
-      writeAll = mockWriteAll;
-    },
-  };
-});
-
-vi.mock("./storage/SessionStore.js", () => {
-  return {
-    SessionStore: class {
-      loadSession = mockLoadSession;
-    },
-  };
-});
 
 describe("agent-handlers", () => {
   let mockMainWindow: any;
@@ -199,8 +117,10 @@ describe("agent-handlers", () => {
   it("registers all expected IPC handlers", () => {
     expect(handlers["agent:start-analysis"]).toBeDefined();
     expect(handlers["agent:continue-analysis"]).toBeDefined();
+    expect(handlers["agent:cancel-analysis"]).toBeDefined();
     expect(handlers["agent:review-case"]).toBeDefined();
     expect(handlers["agent:load-session"]).toBeDefined();
+    expect(handlers["agent:list-sessions"]).toBeDefined();
     expect(handlers["agent:get-config"]).toBeDefined();
     expect(handlers["agent:set-config"]).toBeDefined();
   });
@@ -214,55 +134,98 @@ describe("agent-handlers", () => {
     const result = await handlers["agent:start-analysis"](null, payload);
 
     expect(result.sessionId).toBeDefined();
-    expect(result.sessionId).toMatch(/^session-/);
+    // UUID v4 format: 8-4-4-4-12 hex chars
+    expect(result.sessionId).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/);
   });
 
-  it("agent:start-analysis sends events to renderer", async () => {
+  it("agent:start-analysis delegates to ClaudeAgentRuntime.runAnalysis", async () => {
     const payload = {
       requirementText: "test requirement",
-      contextReferences: [],
+      contextReferences: ["file1.ts"],
     };
 
-    await handlers["agent:start-analysis"](null, payload);
-
-    // Wait for async operations to complete
-    await new Promise((resolve) => setTimeout(resolve, 100));
-
-    // Should have sent multiple events
-    expect(mockMainWindow.webContents.send).toHaveBeenCalled();
-    const calls = mockMainWindow.webContents.send.mock.calls;
-    expect(calls.length).toBeGreaterThan(0);
-
-    // First call should be run_started
-    expect(calls[0][0]).toBe("agent:event");
-    expect(calls[0][1].type).toBe("run_started");
-  });
-
-  it("agent:start-analysis writes artifacts and sends run_completed", async () => {
-    const payload = {
-      requirementText: "test requirement",
-    };
-
-    await handlers["agent:start-analysis"](null, payload);
+    const result = await handlers["agent:start-analysis"](null, payload);
 
     // Wait for async operations
-    await new Promise((resolve) => setTimeout(resolve, 100));
+    await new Promise((resolve) => setTimeout(resolve, 50));
 
-    // Should have written artifacts
-    expect(mockWriteAll).toHaveBeenCalledTimes(1);
+    // Should have called runAnalysis with correct input
+    expect(mockRunAnalysis).toHaveBeenCalledTimes(1);
+    expect(mockRunAnalysis).toHaveBeenCalledWith(
+      expect.objectContaining({
+        requirementText: "test requirement",
+        contextReferences: ["file1.ts"],
+      }),
+      expect.any(Function), // onEvent callback
+      expect.objectContaining({ signal: expect.any(AbortSignal) }), // options
+    );
 
-    // Last event should be run_completed with real paths
-    const calls = mockMainWindow.webContents.send.mock.calls;
-    const lastCall = calls[calls.length - 1];
-    expect(lastCall[0]).toBe("agent:event");
-    expect(lastCall[1].type).toBe("run_completed");
-    expect(lastCall[1].artifactPaths.conversationPath).toContain("conversation.md");
+    // The onEvent callback should forward events to the renderer
+    const onEvent = mockRunAnalysis.mock.calls[0][1] as (event: any) => void;
+    const testEvent = { type: "run_started", sessionId: result.sessionId, timestamp: Date.now() };
+    onEvent(testEvent);
+    expect(mockMainWindow.webContents.send).toHaveBeenCalledWith("agent:event", testEvent);
   });
 
-  it("agent:continue-analysis returns not supported", async () => {
-    const result = await handlers["agent:continue-analysis"](null, {});
-    expect(result.success).toBe(false);
-    expect(result.reason).toContain("尚未支持");
+  it("registers agent:cancel-analysis handler", () => {
+    expect(handlers["agent:cancel-analysis"]).toBeDefined();
+  });
+
+  it("agent:start-analysis sends run_failed when runtime is not available", async () => {
+    // Temporarily make createClaudeRuntimeFromConfig return null
+    const { createClaudeRuntimeFromConfig } = await import("./claude/runtime/createClaudeRuntime.js");
+    vi.mocked(createClaudeRuntimeFromConfig).mockReturnValueOnce(null as any);
+
+    const payload = { requirementText: "test" };
+    await handlers["agent:start-analysis"](null, payload);
+
+    // Should have sent a run_failed event
+    const calls = mockMainWindow.webContents.send.mock.calls;
+    const failedEvent = calls.find((c: any[]) => c[1]?.type === "run_failed");
+    expect(failedEvent).toBeDefined();
+    expect(failedEvent[1].error).toContain("未配置");
+  });
+
+  it("agent:continue-analysis delegates to ClaudeAgentRuntime.continueAnalysis", async () => {
+    const payload = {
+      previousSessionId: "prev-session",
+      feedback: {
+        acceptedCaseIds: ["TC-001"],
+        rejectedCaseIds: [],
+        unresolvedQuestions: [],
+      },
+    };
+
+    const result = await handlers["agent:continue-analysis"](null, payload);
+
+    // Should generate a new sessionId (UUID format)
+    expect(result.sessionId).toBeDefined();
+    expect(result.sessionId).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/);
+
+    // Wait for async operations
+    await new Promise((resolve) => setTimeout(resolve, 50));
+
+    // Should have called continueAnalysis
+    expect(mockContinueAnalysis).toHaveBeenCalledTimes(1);
+    expect(mockContinueAnalysis).toHaveBeenCalledWith(
+      expect.objectContaining({
+        previousSessionId: "prev-session",
+        feedback: expect.objectContaining({
+          acceptedCaseIds: ["TC-001"],
+        }),
+      }),
+      expect.any(Function), // onEvent callback
+      expect.objectContaining({ signal: expect.any(AbortSignal) }), // options
+    );
+  });
+
+  it("agent:review-case returns success", async () => {
+    const result = await handlers["agent:review-case"](null, {
+      sessionId: "test",
+      caseId: "TC-001",
+      status: "accepted",
+    });
+    expect(result.success).toBe(true);
   });
 
   it("agent:load-session returns error when session not found", async () => {
@@ -304,5 +267,27 @@ describe("agent-handlers", () => {
     const updates = { model: "claude-opus-4" };
     const result = await handlers["agent:set-config"](null, updates);
     expect(result.model).toBe("claude-opus-4");
+  });
+
+  it("agent:list-sessions returns session list from SessionStore", async () => {
+    const mockSessions = [
+      { id: "session-1", createdAt: 1700000000000, status: "completed", requirementText: "req 1", model: "claude-sonnet" },
+      { id: "session-2", createdAt: 1700000001000, status: "failed", requirementText: "req 2", model: "claude-sonnet" },
+    ];
+    mockListSessions.mockReturnValueOnce(mockSessions);
+
+    const result = await handlers["agent:list-sessions"](null);
+
+    expect(Array.isArray(result)).toBe(true);
+    expect(result).toHaveLength(2);
+    expect(result[0].id).toBe("session-1");
+    expect(result[1].status).toBe("failed");
+  });
+
+  it("agent:list-sessions returns empty array when no sessions", async () => {
+    mockListSessions.mockReturnValueOnce([]);
+    const result = await handlers["agent:list-sessions"](null);
+    expect(Array.isArray(result)).toBe(true);
+    expect(result).toHaveLength(0);
   });
 });

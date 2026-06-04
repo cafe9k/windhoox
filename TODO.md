@@ -1,7 +1,7 @@
 # Windhoox TODO - 后续工作计划
 
 **最后更新**: 2026-06-03  
-**当前状态**: MVP (Steps 1-11) 已完成
+**当前状态**: Phase 4 Session Resume 核心功能已完成 (2026-06-04)
 
 ---
 
@@ -18,7 +18,7 @@
   - 优先级: 高
 
 ### 真实 API 冒烟测试
-- [ ] **验证 DeepSeek 兼容模式端到端流程**
+- [ ] **验证 Claude SDK 端到端流程（DeepSeek 兼容模式）**
   - 配置 `.env.local` 中的 DeepSeek API Key
   - 启动应用 (`pnpm dev`)
   - 点击 "Demo 演示" 触发分析
@@ -96,33 +96,35 @@
 
 ## Phase 4: Session Resume 与多轮对话
 
+**状态**: 已实现 (2026-06-04) | 测试: 179 passed | 构建: 通过
+
 **前置条件**:
 - [x] MVP 完成并稳定运行
 - [x] `SessionStore.loadSession()` 已实现
-- [ ] `agent:continue-analysis` 当前返回 "not supported" (需实现)
+- [x] `agent:continue-analysis` 已实现
 
 ### 核心功能
-- [ ] 扩展 `AgentRunContinuedEvent` 事件类型
-- [ ] 实现 ClaudeRuntime.continueConversation() 的完整逻辑
-- [ ] 修改 `agent:continue-analysis` 支持传入 previousSessionId 和用户反馈
-- [ ] 实现上下文裁剪: 从 previousSessionId 加载历史事件，构建精简 prompt
-- [ ] 支持用户选择性接受/拒绝上一轮 cases 和 questions
+- [x] 扩展 `AgentRunContinuedEvent` 事件类型
+- [x] 实现 ClaudeRuntime.continueConversation() 的完整逻辑 (`ClaudeAgentRuntime.continueAnalysis`)
+- [x] 修改 `agent:continue-analysis` 支持传入 previousSessionId 和用户反馈
+- [x] 实现上下文裁剪: 从 previousSessionId 加载历史事件，构建精简 prompt
+- [x] 支持用户选择性接受/拒绝上一轮 cases 和 questions (WorkbenchPage 中处理)
 
 ### UI 与交互
-- [ ] 新增 Renderer 组件: 继续分析入口 (从历史记录或失败状态)
-- [ ] 修改 AgentConversationPanel 支持多轮对话气泡展示
-- [ ] 实现 session chain 可视化 (多轮关系图)
-- [ ] 添加 continue-analysis 的 token 预算控制
+- [x] 新增 Renderer 组件: 继续分析入口 (`AnalysisProgressCard` 中的继续分析按钮)
+- [x] 修改 AgentConversationPanel 支持多轮对话气泡展示
+- [x] 实现 session chain 可视化 (`LeftContextPanel` 通过 `previousSessionId` 展示缩进链式关系)
+- [x] 添加 continue-analysis 的 token 预算控制 (`buildContinuationPrompt` 估算 + 裁剪)
 
 ### 测试与验收
-- [ ] 单元测试覆盖 continue-analysis 事件流
+- [x] 单元测试覆盖 continue-analysis 事件流
 - [ ] E2E 测试覆盖多轮对话完整流程
 
 **验收标准**:
-- 用户可从历史记录中选择 session 并继续分析
-- 继续分析时显示前一轮摘要和反馈选项
-- 多轮对话在 UI 中清晰区分轮次
-- Token 使用量不超过预算
+- [x] 用户可从历史记录中选择 session 并继续分析
+- [x] 继续分析时显示前一轮摘要和反馈选项
+- [x] 多轮对话在 UI 中清晰区分轮次
+- [x] Token 使用量不超过预算 (通过 `maxTokens` 全局配置控制，prompt 超预算时自动裁剪)
 
 ---
 
@@ -197,9 +199,9 @@
    - 优先级: 低 (不影响功能)
 
 ### 设计限制 (MVP 范围)
-1. **`agent:continue-analysis` 未实现**
-   - 当前返回 "not supported"
-   - 将在 Phase 4 实现
+1. **`agent:continue-analysis` 已实现** ✅
+   - 支持传入 previousSessionId、feedback、unresolvedQuestions
+   - 通过 `ClaudeAgentRuntime.continueAnalysis` 实现
 
 2. **Skills/Subagents 禁用**
    - 目录已预留，功能未实现

@@ -1,6 +1,7 @@
 import { Button, Typography, Divider, Empty, Tag, Space, List } from "antd";
-import { PlusOutlined, FileTextOutlined, QuestionCircleOutlined, FileOutlined, CodeOutlined, ApiOutlined, SettingOutlined } from "@ant-design/icons";
+import { PlusOutlined, FileTextOutlined, QuestionCircleOutlined, FileOutlined, CodeOutlined, ApiOutlined, SettingOutlined, LinkOutlined } from "@ant-design/icons";
 import { Conversations } from "@ant-design/x";
+import type { SessionSummary } from "../../../types/agent.js";
 
 const { Text } = Typography;
 
@@ -10,13 +11,8 @@ interface ContextReference {
   path?: string;
 }
 
-interface SessionItem {
-  key: string;
-  label: React.ReactNode;
-}
-
 interface LeftContextPanelProps {
-  sessions?: SessionItem[];
+  sessions?: SessionSummary[];
   contexts?: ContextReference[];
   onNewSession?: () => void;
   onSessionClick?: (key: string) => void;
@@ -30,45 +26,89 @@ const contextIconMap: Record<string, React.ReactNode> = {
   api: <ApiOutlined style={{ color: "#faad14" }} />,
 };
 
-// Mock conversation data
-const MOCK_CONVERSATIONS: SessionItem[] = [
-  {
-    key: "session-1",
-    label: (
-      <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-        <Text style={{ fontSize: 13 }}>共同购买推荐资源逻辑</Text>
-        <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11 }}>
-          <Tag color="processing" style={{ fontSize: 10, lineHeight: "16px", padding: "0 4px" }}>评审中</Tag>
-          <Text type="secondary" style={{ fontSize: 11 }}>18 条候选用例</Text>
+const statusColorMap: Record<string, string> = {
+  running: "processing",
+  completed: "success",
+  failed: "error",
+};
+
+const statusLabelMap: Record<string, string> = {
+  running: "分析中",
+  completed: "已完成",
+  failed: "失败",
+};
+
+function truncate(text: string, maxLen = 20): string {
+  return text.length > maxLen ? text.slice(0, maxLen) + "..." : text;
+}
+
+function buildSessionItems(sessions: SessionSummary[]): { key: string; label: React.ReactNode }[] {
+  // Build a map of previousSessionId -> children
+  const childrenMap = new Map<string, SessionSummary[]>();
+  const rootSessions: SessionSummary[] = [];
+
+  for (const s of sessions) {
+    if (s.previousSessionId) {
+      const siblings = childrenMap.get(s.previousSessionId) || [];
+      siblings.push(s);
+      childrenMap.set(s.previousSessionId, siblings);
+    } else {
+      rootSessions.push(s);
+    }
+  }
+
+  const items: { key: string; label: React.ReactNode }[] = [];
+
+  function renderSession(s: SessionSummary, depth: number) {
+    const color = statusColorMap[s.status] || "default";
+    const label = statusLabelMap[s.status] || s.status;
+    const dateStr = new Date(s.createdAt).toLocaleDateString("zh-CN", { month: "short", day: "numeric" });
+
+    items.push({
+      key: s.id,
+      label: (
+        <div style={{ display: "flex", flexDirection: "column", gap: 2, paddingLeft: depth * 12 }}>
+          <Text style={{ fontSize: 13 }}>
+            {truncate(s.requirementText, 18)}
+          </Text>
+          <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11 }}>
+            <Tag color={color} style={{ fontSize: 10, lineHeight: "16px", padding: "0 4px" }}>{label}</Tag>
+            {depth > 0 && (
+              <Tag icon={<LinkOutlined />} style={{ fontSize: 10, lineHeight: "16px", padding: "0 4px" }}>
+                续
+              </Tag>
+            )}
+            <Text type="secondary" style={{ fontSize: 11 }}>{dateStr}</Text>
+          </div>
         </div>
-      </div>
-    ),
-  },
-  {
-    key: "session-2",
-    label: (
-      <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-        <Text style={{ fontSize: 13 }}>办签材料自动分类</Text>
-        <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11 }}>
-          <Tag color="warning" style={{ fontSize: 10, lineHeight: "16px", padding: "0 4px" }}>待补资料</Tag>
-          <Text type="secondary" style={{ fontSize: 11 }}>缺少接口样例</Text>
-        </div>
-      </div>
-    ),
-  },
-];
+      ),
+    });
+
+    // Recursively add children
+    const children = childrenMap.get(s.id);
+    if (children) {
+      for (const child of children) {
+        renderSession(child, depth + 1);
+      }
+    }
+  }
+
+  for (const s of rootSessions) {
+    renderSession(s, 0);
+  }
+
+  return items;
+}
 
 export function LeftContextPanel({
-  sessions = MOCK_CONVERSATIONS,
+  sessions = [],
   contexts = [],
   onNewSession,
   onSessionClick,
   onContextClick,
   onOpenConfig,
 }: LeftContextPanelProps) {
-  const handleConversationClick = (key: string) => {
-    onSessionClick?.(key);
-  };
+  const conversationItems = buildSessionItems(sessions);
 
   return (
     <div className="left-panel">
@@ -80,13 +120,13 @@ export function LeftContextPanel({
 
       <div className="left-panel-body">
         <Divider style={{ margin: "16px 0 12px", fontSize: 12 }}>
-          会话
+          会话 ({sessions.length})
         </Divider>
 
-        {sessions.length > 0 ? (
+        {conversationItems.length > 0 ? (
           <Conversations
-            items={sessions}
-            onActiveChange={handleConversationClick}
+            items={conversationItems}
+            onActiveChange={(key) => onSessionClick?.(key)}
             styles={{
               item: {
                 padding: "8px 12px",

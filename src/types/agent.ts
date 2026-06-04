@@ -15,6 +15,8 @@ export interface ContinueAnalysisPayload {
       text: string;
     }>;
   };
+  /** Optional token budget override for this continuation. Falls back to global config if not set. */
+  tokenBudget?: number;
 }
 
 export interface ReviewCasePayload {
@@ -38,7 +40,8 @@ export type AgentEvent =
   | CoverageMatrixEvent
   | AgentRunCompletedEvent
   | AgentRunFailedEvent
-  | CaseReviewedEvent;
+  | CaseReviewedEvent
+  | AgentRunContinuedEvent;
 
 export interface AgentRunStartedEvent {
   type: "run_started";
@@ -129,6 +132,25 @@ export interface CaseReviewedEvent {
   caseId: string;
   status: "accepted" | "rejected" | "ask_product" | "ask_engineering" | "needs_context";
   timestamp: number;
+}
+
+export interface AgentRunContinuedEvent {
+  type: "run_continued";
+  sessionId: string;
+  previousSessionId: string;
+  timestamp: number;
+}
+
+// Session summary for list views
+export interface SessionSummary {
+  id: string;
+  createdAt: number;
+  status: "running" | "completed" | "failed";
+  requirementText: string;
+  model: string;
+  totalTokens?: number;
+  duration?: number;
+  previousSessionId?: string;
 }
 
 // Config types

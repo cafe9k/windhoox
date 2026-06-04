@@ -160,6 +160,7 @@ export function AIConfigModal({ open, onClose }: AIConfigModalProps) {
         <Form.Item
           name="maxTokens"
           label="最大 Token 数"
+          extra="控制单次 API 调用的最大输出 Token 数，也作为继续分析时的上下文预算上限"
         >
           <InputNumber
             min={1000}

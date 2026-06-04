@@ -1,4 +1,4 @@
-import { Card, Typography, Space, Tag, Statistic } from "antd";
+import { Card, Typography, Space, Tag, Statistic, Button } from "antd";
 import {
   LoadingOutlined,
   CheckCircleOutlined,
@@ -10,6 +10,7 @@ import {
   FileProtectOutlined,
   ExperimentOutlined,
   RightOutlined,
+  ReloadOutlined,
 } from "@ant-design/icons";
 import { ThoughtChain } from "@ant-design/x";
 import type { AgentEvent } from "../../../types/agent";
@@ -37,6 +38,8 @@ interface AnalysisProgressCardProps {
     question: string;
   }>;
   onViewDetails?: () => void;
+  /** Called when user clicks "Continue Analysis" in completed/failed state. */
+  onContinueAnalysis?: () => void;
 }
 
 // ─── Stage Config ───
@@ -167,11 +170,13 @@ function SummaryCard({
   coverage = [],
   questions = [],
   onViewDetails,
+  onContinueAnalysis,
 }: {
   cases?: AnalysisProgressCardProps["cases"];
   coverage?: AnalysisProgressCardProps["coverage"];
   questions?: AnalysisProgressCardProps["questions"];
   onViewDetails?: () => void;
+  onContinueAnalysis?: () => void;
 }) {
   const counts = {
     total: cases.length,
@@ -240,6 +245,21 @@ function SummaryCard({
           />
         </div>
       </div>
+
+      {onContinueAnalysis && (
+        <div style={{ marginTop: 16, display: "flex", justifyContent: "center" }}>
+          <Button
+            type="primary"
+            icon={<ReloadOutlined />}
+            onClick={(e) => {
+              e.stopPropagation();
+              onContinueAnalysis();
+            }}
+          >
+            继续分析（基于当前结果优化）
+          </Button>
+        </div>
+      )}
     </div>
   );
 }
@@ -253,6 +273,7 @@ export function AnalysisProgressCard({
   coverage = [],
   questions = [],
   onViewDetails,
+  onContinueAnalysis,
 }: AnalysisProgressCardProps) {
   if (status === "idle") return null;
 
@@ -292,12 +313,24 @@ export function AnalysisProgressCard({
             coverage={coverage}
             questions={questions}
             onViewDetails={onViewDetails}
+            onContinueAnalysis={onContinueAnalysis}
           />
         )}
 
         {status === "failed" && (
           <div className="analysis-card-error">
             <Text type="danger">分析过程中出现错误，请重试</Text>
+            {onContinueAnalysis && (
+              <div style={{ marginTop: 12 }}>
+                <Button
+                  type="primary"
+                  icon={<ReloadOutlined />}
+                  onClick={onContinueAnalysis}
+                >
+                  重试/继续分析
+                </Button>
+              </div>
+            )}
           </div>
         )}
       </div>

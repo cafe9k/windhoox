@@ -16,8 +16,7 @@ describe("App", () => {
 
     // Left panel
     expect(screen.getByText("新建测试任务")).toBeInTheDocument();
-    expect(screen.getByText("共同购买推荐资源逻辑")).toBeInTheDocument();
-    expect(screen.getByText("办签材料自动分类")).toBeInTheDocument();
+    expect(screen.getByText("暂无会话")).toBeInTheDocument();
     expect(screen.getByText("AI 配置")).toBeInTheDocument();
 
     // Center panel

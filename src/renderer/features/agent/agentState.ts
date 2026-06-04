@@ -4,6 +4,7 @@ export interface AgentState {
   sessionId: string;
   status: "idle" | "running" | "completed" | "failed";
   requirement: string;
+  sourcesRead: string[];
   insights: Array<{
     id: string;
     businessRule?: string;
@@ -36,7 +37,13 @@ export interface AgentState {
     casesPath: string;
     coveragePath: string;
   };
+  /** For continued sessions, references the previous session's ID. */
+  previousSessionId?: string;
+  /** Round number for multi-turn conversations (1 = initial, 2+ = continued). */
+  round?: number;
 }
+
+let insightCounter = 0;
 
 function ensureState(state: AgentState | null, sessionId?: string): AgentState {
   if (state) return state;
@@ -44,6 +51,7 @@ function ensureState(state: AgentState | null, sessionId?: string): AgentState {
     sessionId: sessionId || "",
     status: "running",
     requirement: "",
+    sourcesRead: [],
     insights: [],
     questions: [],
     cases: [],
@@ -54,25 +62,54 @@ function ensureState(state: AgentState | null, sessionId?: string): AgentState {
 export function agentStateReducer(state: AgentState | null, event: AgentEvent): AgentState | null {
   switch (event.type) {
     case "run_started": {
+      insightCounter = 0;
       return {
         sessionId: event.sessionId,
         status: "running",
         requirement: "",
+        sourcesRead: [],
         insights: [],
         questions: [],
         cases: [],
-        coverage: []
+        coverage: [],
+        round: 1,
+      };
+    }
+
+    case "run_continued": {
+      insightCounter = 0;
+      const prevRound = state?.round || 1;
+      return {
+        sessionId: event.sessionId,
+        status: "running",
+        requirement: state?.requirement || "",
+        sourcesRead: [],
+        insights: [],
+        questions: [],
+        cases: [],
+        coverage: [],
+        previousSessionId: event.previousSessionId,
+        round: prevRound + 1,
+      };
+    }
+
+    case "reading_sources": {
+      const s = ensureState(state, event.sessionId);
+      return {
+        ...s,
+        sourcesRead: [...s.sourcesRead, event.source],
       };
     }
 
     case "requirement_insight": {
       const s = ensureState(state, event.sessionId);
+      insightCounter++;
       return {
         ...s,
         insights: [
           ...s.insights,
           {
-            id: `insight-${Date.now()}`,
+            id: `insight-${s.sessionId.slice(0, 8)}-${insightCounter}`,
             businessRule: event.insight.businessRule,
             risk: event.insight.risk,
             evidence: event.insight.evidence,
@@ -134,7 +171,6 @@ export function agentStateReducer(state: AgentState | null, event: AgentEvent): 
       };
     }
 
-    case "reading_sources":
     default:
       return state;
   }

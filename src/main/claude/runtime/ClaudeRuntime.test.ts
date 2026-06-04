@@ -18,6 +18,27 @@ vi.mock("@anthropic-ai/sdk", () => {
           output_tokens: 50,
         },
       }),
+      parse: vi.fn().mockResolvedValue({
+        id: "msg_test_parsed",
+        content: [{ type: "text", text: '{"insights":[],"questions":[],"cases":[],"coverage":[]}' }],
+        role: "assistant",
+        model: "claude-sonnet-4-5",
+        stop_reason: "end_turn",
+        stop_sequence: null,
+        type: "message",
+        usage: {
+          input_tokens: 100,
+          output_tokens: 50,
+        },
+        parsed_output: {
+          pageUnderstanding: { pageType: "unknown", confidence: 0, modules: [], risks: [] },
+          insights: [],
+          questions: [],
+          cases: [],
+          coverage: [],
+          validation: { passed: true, score: 0, missingCoverage: [], duplicatedCases: [] },
+        },
+      }),
     };
 
     constructor(_config: { apiKey: string }) {
@@ -29,6 +50,11 @@ vi.mock("@anthropic-ai/sdk", () => {
     default: MockAnthropic,
   };
 });
+
+// Mock the zodOutputFormat helper
+vi.mock("@anthropic-ai/sdk/helpers/zod.js", () => ({
+  zodOutputFormat: vi.fn().mockReturnValue({ type: "json_schema", schema: {} }),
+}));
 
 // Import after mock is set up
 import { ClaudeRuntime } from "./ClaudeRuntime.js";
@@ -151,5 +177,65 @@ describe("ClaudeRuntime", () => {
     expect(updatedConfig.model).toBe("claude-opus-4");
     expect(updatedConfig.maxTokens).toBe(8192);
     expect(updatedConfig.temperature).toBe(0.7); // unchanged
+  });
+
+  describe("structured output", () => {
+    it("should use messages.parse when enableStructuredOutput is true", async () => {
+      const structuredConfig: ClaudeRuntimeConfig = {
+        ...config,
+        enableStructuredOutput: true,
+      };
+      const structuredRuntime = new ClaudeRuntime(structuredConfig);
+
+      const input = {
+        requirementText: "Test structured output",
+        sessionId: "structured-session",
+      };
+
+      const message = await structuredRuntime.startAnalysis(input);
+
+      expect(message).toBeDefined();
+      expect(message.role).toBe("assistant");
+      // The mock parse method should have been called
+      const mockClient = (structuredRuntime as any).client;
+      expect(mockClient.messages.parse).toHaveBeenCalledTimes(1);
+      expect(mockClient.messages.create).not.toHaveBeenCalled();
+    });
+
+    it("should use messages.create when enableStructuredOutput is false", async () => {
+      const standardConfig: ClaudeRuntimeConfig = {
+        ...config,
+        enableStructuredOutput: false,
+      };
+      const standardRuntime = new ClaudeRuntime(standardConfig);
+
+      const input = {
+        requirementText: "Test standard output",
+        sessionId: "standard-session",
+      };
+
+      const message = await standardRuntime.startAnalysis(input);
+
+      expect(message).toBeDefined();
+      const mockClient = (standardRuntime as any).client;
+      expect(mockClient.messages.create).toHaveBeenCalledTimes(1);
+      expect(mockClient.messages.parse).not.toHaveBeenCalled();
+    });
+
+    it("should use messages.create by default when enableStructuredOutput is not set", async () => {
+      // config does not have enableStructuredOutput set
+      const defaultRuntime = new ClaudeRuntime(config);
+
+      const input = {
+        requirementText: "Test default output",
+        sessionId: "default-session",
+      };
+
+      await defaultRuntime.startAnalysis(input);
+
+      const mockClient = (defaultRuntime as any).client;
+      expect(mockClient.messages.create).toHaveBeenCalledTimes(1);
+      expect(mockClient.messages.parse).not.toHaveBeenCalled();
+    });
   });
 });

@@ -161,6 +161,22 @@ describe("eventToBubble", () => {
     expect(bubble!.content).toContain("API Key 无效");
   });
 
+  it("maps run_continued event to bubble", () => {
+    const event: AgentEvent = {
+      type: "run_continued",
+      sessionId: "new-session",
+      previousSessionId: "prev-session",
+      timestamp: Date.now(),
+    };
+
+    const bubble = eventToBubble(event);
+
+    expect(bubble).not.toBeNull();
+    expect(bubble!.content).toContain("继续分析");
+    expect(bubble!.content).toContain("prev-ses");
+    expect(bubble!.role).toBe("assistant");
+  });
+
   it("returns null for case_reviewed event", () => {
     const event: AgentEvent = {
       type: "case_reviewed",

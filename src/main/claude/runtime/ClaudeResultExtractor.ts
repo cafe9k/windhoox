@@ -156,6 +156,72 @@ export function extractResult(message: string): ExtractorResult {
   };
 }
 
+// ─── Repair strategies ───
+
+/**
+ * Attempt to repair common JSON issues:
+ * 1. Remove trailing commas before } or ]
+ * 2. Remove trailing content after the JSON object
+ */
+function attemptRepair(raw: string): string {
+  let repaired = raw;
+
+  // Remove trailing commas before closing braces/brackets
+  repaired = repaired.replace(/,\s*([}\]])/g, "$1");
+
+  return repaired;
+}
+
+/**
+ * Extract with automatic repair retry.
+ *
+ * If the initial extraction fails, applies repair strategies and retries once.
+ * Returns the original error if repair also fails.
+ */
+export function extractResultWithRetry(message: string, maxRetries: number = 1): ExtractorResult {
+  const firstAttempt = extractResult(message);
+  if (firstAttempt.success) return firstAttempt;
+
+  if (maxRetries <= 0) return firstAttempt;
+
+  // Try repair for parse errors
+  if (firstAttempt.error.kind === "parse_error") {
+    const repaired = attemptRepair(firstAttempt.error.rawSnippet || message);
+    if (repaired !== message) {
+      const retryResult = extractResult(repaired);
+      if (retryResult.success) {
+        return {
+          success: true,
+          data: retryResult.data,
+        };
+      }
+      // Repair didn't help — return a repair_needed error
+      return {
+        success: false,
+        error: {
+          kind: "repair_needed",
+          message: `Auto-repair attempted but failed. Original: ${firstAttempt.error.message}. After repair: ${retryResult.error.message}`,
+          originalError: firstAttempt.error,
+        },
+      };
+    }
+  }
+
+  // Try repair for validation errors — the parsed JSON might have fixable issues
+  if (firstAttempt.error.kind === "validation_error") {
+    const rawJson = JSON.stringify(firstAttempt.error.parsedJson);
+    const repaired = attemptRepair(rawJson);
+    if (repaired !== rawJson) {
+      const retryResult = extractResult(repaired);
+      if (retryResult.success) {
+        return { success: true, data: retryResult.data };
+      }
+    }
+  }
+
+  return firstAttempt;
+}
+
 function validateSchema(parsed: unknown, rawJson: string): ExtractorResult {
   const result = windhooxAgentResultSchema.safeParse(parsed);
   if (result.success) {

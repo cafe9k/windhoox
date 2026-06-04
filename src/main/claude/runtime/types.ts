@@ -17,6 +17,8 @@ export interface ClaudeRuntimeCallbacks {
   onAssistantMessage?: (message: Message) => void;
   onError?: (error: Error) => void;
   onComplete?: (finalMessage: Message) => void;
+  /** Called with each text delta during streaming. */
+  onTextDelta?: (textDelta: string, textSnapshot: string) => void;
 }
 
 /**
@@ -30,6 +32,10 @@ export interface ClaudeRuntimeConfig {
   maxTokens: number;
   temperature: number;
   enableToolUse?: boolean;
+  /** Use structured output (output_config.format) with Claude API for guaranteed JSON schema compliance. */
+  enableStructuredOutput?: boolean;
+  /** Use streaming API (messages.stream()) instead of synchronous create/parse. */
+  enableStreaming?: boolean;
 }
 
 /**

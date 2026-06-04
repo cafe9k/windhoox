@@ -7,6 +7,11 @@ import type {
   AnalysisSession,
   SessionMetadata,
 } from "./types.js";
+import { windhooxAgentResultSchema } from "../../schemas/windhooxAgentResult.js";
+import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod.js";
+
+/** JSON Schema for structured output, derived from windhooxAgentResultSchema. */
+const structuredOutputFormat = zodOutputFormat(windhooxAgentResultSchema);
 
 /**
  * Claude 运行时实现
@@ -46,6 +51,7 @@ export class ClaudeRuntime {
   async startAnalysis(
     input: ClaudeAnalysisInput,
     callbacks: ClaudeRuntimeCallbacks = {},
+    signal?: AbortSignal,
   ): Promise<Message> {
     const metadata: SessionMetadata = {
       sessionId: input.sessionId,
@@ -72,14 +78,33 @@ export class ClaudeRuntime {
       this.currentSession.messages.push(userMessage);
       callbacks.onMessage?.(userMessage);
 
-      // 调用 Claude API
-      const response = await this.client.messages.create({
+      // 构建 API 参数
+      const baseParams = {
         model: this.config.model,
         max_tokens: this.config.maxTokens,
         temperature: this.config.temperature,
         system: this.config.systemPrompt,
-        messages: [userMessage],
-      });
+        messages: [userMessage] as MessageParam[],
+      };
+
+      let response: Message;
+
+      if (this.config.enableStreaming) {
+        // Streaming mode — use messages.stream()
+        response = await this.startAnalysisStreaming(baseParams, callbacks, signal);
+      } else if (this.config.enableStructuredOutput) {
+        // Structured output mode — use messages.parse()
+        const parsedResponse = await this.client.messages.parse({
+          ...baseParams,
+          output_config: {
+            format: structuredOutputFormat,
+          },
+        }, { signal });
+        response = parsedResponse as unknown as Message;
+      } else {
+        // Standard synchronous API call
+        response = await this.client.messages.create(baseParams, { signal });
+      }
 
       // 记录响应
       this.currentSession.assistantMessages.push(response);
@@ -107,11 +132,49 @@ export class ClaudeRuntime {
   }
 
   /**
+   * 流式分析 — 使用 messages.stream() API
+   * 支持 AbortSignal，逐步转发 text delta 和 JSON delta 事件。
+   */
+  private async startAnalysisStreaming(
+    baseParams: Record<string, unknown>,
+    callbacks: ClaudeRuntimeCallbacks,
+    signal?: AbortSignal,
+  ): Promise<Message> {
+    const streamParams: Record<string, unknown> = {
+      ...baseParams,
+    };
+
+    // If structured output is also enabled, include output_config in stream
+    if (this.config.enableStructuredOutput) {
+      streamParams.output_config = {
+        format: structuredOutputFormat,
+      };
+    }
+
+    const stream = this.client.messages.stream(
+      streamParams as any,
+      { signal },
+    );
+
+    // Forward text deltas if callback provided
+    if (callbacks.onTextDelta) {
+      stream.on("text", (textDelta: string, textSnapshot: string) => {
+        callbacks.onTextDelta!(textDelta, textSnapshot);
+      });
+    }
+
+    // Wait for the final message
+    const finalMessage = await stream.finalMessage();
+    return finalMessage as unknown as Message;
+  }
+
+  /**
    * 继续当前会话（多轮对话）
    */
   async continueConversation(
     userMessage: string,
     callbacks: ClaudeRuntimeCallbacks = {},
+    signal?: AbortSignal,
   ): Promise<Message> {
     if (!this.currentSession) {
       throw new Error("No active session. Call startAnalysis first.");
@@ -137,7 +200,7 @@ export class ClaudeRuntime {
         temperature: this.config.temperature,
         system: this.config.systemPrompt,
         messages: allMessages,
-      });
+      }, { signal });
 
       this.currentSession.assistantMessages.push(response);
       callbacks.onAssistantMessage?.(response);

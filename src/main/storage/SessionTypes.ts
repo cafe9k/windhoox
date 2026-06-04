@@ -12,6 +12,8 @@ export interface SessionMetadata {
   model: string;
   totalTokens?: number;
   duration?: number;
+  /** For continued sessions, references the previous session's ID. */
+  previousSessionId?: string;
 }
 
 export interface SessionPaths {

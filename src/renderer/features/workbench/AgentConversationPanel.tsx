@@ -90,9 +90,13 @@ interface AgentConversationPanelProps {
     category: "product" | "engineering" | "qa";
     question: string;
   }>;
+  /** Round number for multi-turn conversations. */
+  round?: number;
   onSubmit?: (requirement: string) => void;
   onPromptClick?: (key: string) => void;
   onViewDetails?: () => void;
+  /** Called when user wants to continue analysis from current completed/failed session. */
+  onContinueAnalysis?: (feedback: string) => void;
 }
 
 export function AgentConversationPanel({
@@ -103,15 +107,23 @@ export function AgentConversationPanel({
   cases = [],
   coverage = [],
   questions = [],
+  round = 1,
   onSubmit,
   onPromptClick,
   onViewDetails,
+  onContinueAnalysis,
 }: AgentConversationPanelProps) {
   const [inputValue, setInputValue] = useState("");
 
   const handleSubmit = (value: string) => {
     if (!value.trim()) return;
     onSubmit?.(value);
+    setInputValue("");
+  };
+
+  const handleContinueSubmit = (value: string) => {
+    if (!value.trim()) return;
+    onContinueAnalysis?.(value);
     setInputValue("");
   };
 
@@ -221,6 +233,7 @@ export function AgentConversationPanel({
           coverage={coverage}
           questions={questions}
           onViewDetails={onViewDetails}
+          onContinueAnalysis={onContinueAnalysis ? () => onContinueAnalysis("") : undefined}
         />
 
         {/* Bubble list - conversation flow */}
@@ -237,13 +250,26 @@ export function AgentConversationPanel({
       </div>
 
       <div className="center-panel-footer">
-        <Sender
-          value={inputValue}
-          onChange={setInputValue}
-          onSubmit={handleSubmit}
-          placeholder={status === "running" ? "等待分析完成..." : "补充说明或继续分析..."}
-          disabled={status === "running"}
-        />
+        {status === "completed" || status === "failed" ? (
+          <Sender
+            value={inputValue}
+            onChange={setInputValue}
+            onSubmit={handleContinueSubmit}
+            placeholder={
+              round > 1
+                ? `第 ${round} 轮分析已完成，输入反馈继续优化...`
+                : "分析已完成，输入反馈继续优化..."
+            }
+          />
+        ) : (
+          <Sender
+            value={inputValue}
+            onChange={setInputValue}
+            onSubmit={handleSubmit}
+            placeholder={status === "running" ? "等待分析完成..." : "补充说明或继续分析..."}
+            disabled={status === "running"}
+          />
+        )}
       </div>
     </div>
   );
