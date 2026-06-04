@@ -95,7 +95,12 @@ function ensurePaths(): void {
 }
 
 /**
- * Load .env.local file and extract CLAUDE_API_KEY if present.
+ * Load .env.local file and extract non-sensitive config values.
+ *
+ * NOTE: API key, baseURL, and model are intentionally NOT read from .env.local.
+ * Users must configure these via the frontend AI Config modal.
+ * Only systemPrompt, maxTokens, and temperature can be overridden via .env.local
+ * for development convenience.
  */
 function loadEnvLocal(): Partial<AppConfig> {
   const candidates = [
@@ -124,13 +129,9 @@ function loadEnvLocal(): Partial<AppConfig> {
         const key = trimmed.slice(0, eqIdx).trim();
         const value = trimmed.slice(eqIdx + 1).trim().replace(/^["']|["']$/g, "");
 
-        if (key === "CLAUDE_API_KEY" || key === "DEEPSEEK_API_KEY") {
-          result.anthropicApiKey = value;
-        } else if (key === "CLAUDE_BASE_URL" || key === "DEEPSEEK_BASE_URL") {
-          result.baseURL = value;
-        } else if (key === "CLAUDE_MODEL" || key === "DEEPSEEK_MODEL") {
-          result.model = value;
-        } else if (key === "CLAUDE_SYSTEM_PROMPT") {
+        // Intentionally NOT reading: CLAUDE_API_KEY, DEEPSEEK_API_KEY,
+        // CLAUDE_BASE_URL, DEEPSEEK_BASE_URL, CLAUDE_MODEL, DEEPSEEK_MODEL
+        if (key === "CLAUDE_SYSTEM_PROMPT") {
           result.systemPrompt = value;
         } else if (key === "CLAUDE_MAX_TOKENS") {
           result.maxTokens = parseInt(value, 10);
@@ -138,7 +139,10 @@ function loadEnvLocal(): Partial<AppConfig> {
           result.temperature = parseFloat(value);
         }
       }
-      if (result.anthropicApiKey) break;
+      // Break after first successful read (don't need API key as exit condition anymore)
+      if (result.systemPrompt !== undefined || result.maxTokens !== undefined || result.temperature !== undefined) {
+        break;
+      }
     } catch {
       // file doesn't exist at this location
     }
@@ -181,15 +185,11 @@ function buildSources(
   const defaultSource: ConfigSource = { key: "default", label: "默认值" };
 
   return {
-    anthropicApiKey: fromEnv.anthropicApiKey
-      ? envSource
-      : (fromDisk.hasFile && "anthropicApiKey" in fromDisk.raw ? diskSource : defaultSource),
-    baseURL: fromEnv.baseURL
-      ? envSource
-      : (fromDisk.hasFile && "baseURL" in fromDisk.raw ? diskSource : defaultSource),
-    model: fromEnv.model
-      ? envSource
-      : (fromDisk.hasFile && "model" in fromDisk.raw ? diskSource : defaultSource),
+    // API key, baseURL, model: env no longer provides these — only disk or default
+    anthropicApiKey: fromDisk.hasFile && "anthropicApiKey" in fromDisk.raw ? diskSource : defaultSource,
+    baseURL: fromDisk.hasFile && "baseURL" in fromDisk.raw ? diskSource : defaultSource,
+    model: fromDisk.hasFile && "model" in fromDisk.raw ? diskSource : defaultSource,
+    // systemPrompt, maxTokens, temperature: env can still override for dev convenience
     systemPrompt: fromEnv.systemPrompt
       ? envSource
       : (fromDisk.hasFile && "systemPrompt" in fromDisk.raw ? diskSource : defaultSource),
@@ -204,7 +204,10 @@ function buildSources(
 
 /**
  * Get current app config.
- * Priority: .env.local (dev) > persisted config > defaults
+ *
+ * Priority by field:
+ * - systemPrompt, maxTokens, temperature: .env.local (dev) > persisted config > defaults
+ * - anthropicApiKey, baseURL, model: persisted config > defaults (NOT from .env.local)
  */
 export function getConfig(): AppConfig {
   if (_config) return _config;

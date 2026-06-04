@@ -49,7 +49,7 @@ export function registerAgentHandlers(mainWindow: BrowserWindow | null) {
       sendEvent(mainWindow, {
         type: "run_failed",
         sessionId,
-        error: "Claude API 未配置。请在设置中填写 Anthropic API Key。",
+        error: "AI 未配置。请点击左下角「AI 配置」按钮，填写 API Key 和模型信息后重试。",
         recoverable: true,
         retryEligible: false,
         timestamp: Date.now(),
@@ -90,7 +90,7 @@ export function registerAgentHandlers(mainWindow: BrowserWindow | null) {
       sendEvent(mainWindow, {
         type: "run_failed",
         sessionId,
-        error: "Claude API 未配置。请在设置中填写 Anthropic API Key。",
+        error: "AI 未配置。请点击左下角「AI 配置」按钮，填写 API Key 和模型信息后重试。",
         recoverable: true,
         retryEligible: false,
         timestamp: Date.now(),

@@ -67,15 +67,13 @@ test.describe("Analysis Flow", () => {
     // Press Enter to submit
     await textarea.press("Enter");
 
-    // 4. Should show loading state "分析中..." or "正在处理..."
-    await expect(page.locator("text=分析中...").or(page.locator("text=正在处理..."))).toBeVisible({ timeout: 5000 });
-
-    // 5. Wait for either success or failure
+    // 4. Wait for either success or failure
     // The API call takes ~20s, so we wait up to 60s
-    const completed = page.locator("text=分析完成");
-    const failed = page.locator("text=分析失败");
+    // Note: if API key is not configured, it fails immediately without showing loading state
+    const completed = page.locator("strong:has-text('分析完成')");
+    const failed = page.locator("strong:has-text('分析失败')");
 
-    await expect(completed.or(failed)).toBeVisible({ timeout: 60000 });
+    await expect(completed.or(failed).first()).toBeVisible({ timeout: 60000 });
 
     // Take screenshot of result
     await page.screenshot({ path: "e2e-result.png" });
@@ -83,7 +81,7 @@ test.describe("Analysis Flow", () => {
     // Verify either success or failure is properly displayed
     const isFailed = await failed.isVisible().catch(() => false);
     if (isFailed) {
-      const errorText = await page.locator("text=/API|error|Error|失败/").first().textContent();
+      const errorText = await page.locator("text=/API|error|Error|失败|配置/").first().textContent();
       console.log(`⚠️ Analysis failed with: ${errorText}`);
     } else {
       console.log("✅ Analysis completed successfully");
@@ -122,13 +120,11 @@ test.describe("Analysis Flow", () => {
     // Submit
     await textarea.press("Enter");
 
-    // Should show loading
-    await expect(page.locator("text=分析中...").or(page.locator("text=正在处理..."))).toBeVisible({ timeout: 5000 });
-
-    // Wait for result
-    const completed = page.locator("text=分析完成");
-    const failed = page.locator("text=分析失败");
-    await expect(completed.or(failed)).toBeVisible({ timeout: 60000 });
+    // Wait for result (success or failure)
+    // Note: if API key is not configured, it fails immediately
+    const completed = page.locator("strong:has-text('分析完成')");
+    const failed = page.locator("strong:has-text('分析失败')");
+    await expect(completed.or(failed).first()).toBeVisible({ timeout: 60000 });
 
     await page.screenshot({ path: "e2e-demo.png" });
 

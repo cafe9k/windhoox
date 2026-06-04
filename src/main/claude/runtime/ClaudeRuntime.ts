@@ -14,16 +14,88 @@ import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod.js";
 const structuredOutputFormat = zodOutputFormat(windhooxAgentResultSchema);
 
 /**
+ * Check if the configured endpoint is an OpenAI-compatible API (e.g. DeepSeek)
+ * rather than the native Anthropic Messages API.
+ */
+function isOpenAICompatible(baseURL: string | undefined): boolean {
+  if (!baseURL) return false;
+  const url = baseURL.toLowerCase();
+  return url.includes("deepseek") || url.includes("openai") || url.includes("gpt");
+}
+
+/**
+ * Build a Message-shaped object from an OpenAI-compatible chat completion response.
+ */
+function wrapOpenAIResponse(
+  json: Record<string, unknown>,
+  model: string,
+): Message {
+  const choice = (json.choices as any[])[0];
+  const content = choice?.message?.content ?? "";
+  const usage = (json.usage as Record<string, number>) || {};
+  return {
+    id: (json.id as string) || "openai-response",
+    type: "message",
+    role: "assistant",
+    model,
+    content: [{ type: "text", text: content }],
+    usage: {
+      input_tokens: usage.prompt_tokens ?? 0,
+      output_tokens: usage.completion_tokens ?? 0,
+    },
+    stop_reason: choice?.finish_reason === "stop" ? "end_turn" : null,
+    stop_sequence: null,
+  } as unknown as Message;
+}
+
+/**
+ * Call an OpenAI-compatible chat completions endpoint via fetch.
+ */
+async function callOpenAIChatCompletion(
+  baseURL: string,
+  apiKey: string,
+  body: Record<string, unknown>,
+  signal?: AbortSignal,
+): Promise<Record<string, unknown>> {
+  const url = baseURL.replace(/\/$/, "") + "/chat/completions";
+  const response = await fetch(url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify(body),
+    signal,
+  });
+
+  if (!response.ok) {
+    const text = await response.text().catch(() => "");
+    throw new Error(`OpenAI-compatible API error: ${response.status} ${response.statusText}${text ? " - " + text : ""}`);
+  }
+
+  return response.json() as Promise<Record<string, unknown>>;
+}
+
+/**
  * Claude 运行时实现
  * 负责与 Claude API 的通信和会话管理
+ * 同时支持 OpenAI-compatible 端点（如 DeepSeek）的适配调用。
  */
 export class ClaudeRuntime {
   private client: Anthropic;
   private config: ClaudeRuntimeConfig;
   private currentSession: AnalysisSession | null = null;
+  private useOpenAICompat: boolean;
 
   constructor(config: ClaudeRuntimeConfig) {
     this.config = config;
+    this.useOpenAICompat = isOpenAICompatible(config.baseURL);
+
+    if (this.useOpenAICompat) {
+      // No Anthropic client needed for OpenAI-compatible endpoints
+      this.client = null as unknown as Anthropic;
+      return;
+    }
 
     // 清理可能干扰的环境变量（如 Claude Desktop 设置的 ANTHROPIC_AUTH_TOKEN）
     const originalAuthToken = process.env.ANTHROPIC_AUTH_TOKEN;
@@ -78,22 +150,29 @@ export class ClaudeRuntime {
       this.currentSession.messages.push(userMessage);
       callbacks.onMessage?.(userMessage);
 
-      // 构建 API 参数
-      const baseParams = {
-        model: this.config.model,
-        max_tokens: this.config.maxTokens,
-        temperature: this.config.temperature,
-        system: this.config.systemPrompt,
-        messages: [userMessage] as MessageParam[],
-      };
-
       let response: Message;
 
-      if (this.config.enableStreaming) {
+      if (this.useOpenAICompat) {
+        response = await this.startAnalysisOpenAICompat(userMessage, signal);
+      } else if (this.config.enableStreaming) {
         // Streaming mode — use messages.stream()
+        const baseParams = {
+          model: this.config.model,
+          max_tokens: this.config.maxTokens,
+          temperature: this.config.temperature,
+          system: this.config.systemPrompt,
+          messages: [userMessage] as MessageParam[],
+        };
         response = await this.startAnalysisStreaming(baseParams, callbacks, signal);
       } else if (this.config.enableStructuredOutput) {
         // Structured output mode — use messages.parse()
+        const baseParams = {
+          model: this.config.model,
+          max_tokens: this.config.maxTokens,
+          temperature: this.config.temperature,
+          system: this.config.systemPrompt,
+          messages: [userMessage] as MessageParam[],
+        };
         const parsedResponse = await this.client.messages.parse({
           ...baseParams,
           output_config: {
@@ -103,6 +182,13 @@ export class ClaudeRuntime {
         response = parsedResponse as unknown as Message;
       } else {
         // Standard synchronous API call
+        const baseParams = {
+          model: this.config.model,
+          max_tokens: this.config.maxTokens,
+          temperature: this.config.temperature,
+          system: this.config.systemPrompt,
+          messages: [userMessage] as MessageParam[],
+        };
         response = await this.client.messages.create(baseParams, { signal });
       }
 
@@ -129,6 +215,40 @@ export class ClaudeRuntime {
       callbacks.onError?.(err);
       throw err;
     }
+  }
+
+  /**
+   * OpenAI-compatible analysis (DeepSeek, etc.) using fetch.
+   */
+  private async startAnalysisOpenAICompat(
+    userMessage: MessageParam,
+    signal?: AbortSignal,
+  ): Promise<Message> {
+    const messages = [
+      { role: "system", content: this.config.systemPrompt },
+      { role: "user", content: String(userMessage.content) },
+    ];
+
+    const body: Record<string, unknown> = {
+      model: this.config.model,
+      messages,
+      max_tokens: this.config.maxTokens,
+      temperature: this.config.temperature,
+    };
+
+    // DeepSeek reasoner models don't support temperature
+    if (this.config.model.includes("reasoner")) {
+      delete body.temperature;
+    }
+
+    const json = await callOpenAIChatCompletion(
+      this.config.baseURL!,
+      this.config.apiKey,
+      body,
+      signal,
+    );
+
+    return wrapOpenAIResponse(json, this.config.model);
   }
 
   /**
@@ -189,18 +309,50 @@ export class ClaudeRuntime {
     callbacks.onMessage?.(messageParam);
 
     try {
-      // 构建完整的消息历史
-      const allMessages: MessageParam[] = [
-        ...this.currentSession.messages,
-      ];
+      let response: Message;
 
-      const response = await this.client.messages.create({
-        model: this.config.model,
-        max_tokens: this.config.maxTokens,
-        temperature: this.config.temperature,
-        system: this.config.systemPrompt,
-        messages: allMessages,
-      }, { signal });
+      if (this.useOpenAICompat) {
+        const messages = [
+          { role: "system", content: this.config.systemPrompt },
+          ...this.currentSession.messages.map((m) => ({
+            role: m.role,
+            content: String(m.content),
+          })),
+        ];
+
+        const body: Record<string, unknown> = {
+          model: this.config.model,
+          messages,
+          max_tokens: this.config.maxTokens,
+          temperature: this.config.temperature,
+        };
+
+        if (this.config.model.includes("reasoner")) {
+          delete body.temperature;
+        }
+
+        const json = await callOpenAIChatCompletion(
+          this.config.baseURL!,
+          this.config.apiKey,
+          body,
+          signal,
+        );
+
+        response = wrapOpenAIResponse(json, this.config.model);
+      } else {
+        // 构建完整的消息历史
+        const allMessages: MessageParam[] = [
+          ...this.currentSession.messages,
+        ];
+
+        response = await this.client.messages.create({
+          model: this.config.model,
+          max_tokens: this.config.maxTokens,
+          temperature: this.config.temperature,
+          system: this.config.systemPrompt,
+          messages: allMessages,
+        }, { signal });
+      }
 
       this.currentSession.assistantMessages.push(response);
       callbacks.onAssistantMessage?.(response);
